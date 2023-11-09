@@ -21,6 +21,7 @@ let container, stats;
 let camera, scene, renderer, controls;
 let composer, effectFXAA, outlinePass;
 let model;
+let mixer;
 
 // Highlight & GUI
 
@@ -39,6 +40,7 @@ const params = {
   rotate: false,
   usePatternTexture: false,
   search: "",
+  testFunction: testFunction
 };
 
 // Init gui
@@ -68,6 +70,8 @@ gui.add(params, "usePatternTexture").onChange(function (value) {
 });
 
 gui.add(params, "search").onChange(findObject);
+
+gui.add(params,'testFunction');
 
 function Configuration() {
   this.visibleEdgeColor = "#ffffff";
@@ -116,6 +120,9 @@ function init() {
   controls.dampingFactor = 0.05;
   controls.update();
 
+
+
+
   new RGBELoader().setPath("textures/").load("royal_esplanade_1k.hdr", function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -126,6 +133,8 @@ function init() {
 
     // model
 
+
+
     const loader = new GLTFLoader().setPath("Engine/");
     loader.load("scene.gltf", async function (gltf) {
       model = gltf.scene;
@@ -134,7 +143,26 @@ function init() {
       renderer.compile(model, camera, scene);
 
       scene.add(model);
-      console.log(getSimplifiedJson(model));
+
+      
+      mixer = new THREE.AnimationMixer(model);
+      let clips = gltf.animations;
+      clips.forEach( function ( clip ) {
+        mixer.clipAction( clip ).play();
+      } );
+      
+
+      console.log(gltf.animations);
+      
+      // gltf.animations; // Array<THREE.AnimationClip>
+      // gltf.scene; // THREE.Group
+      // gltf.scenes; // Array<THREE.Group>
+      // gltf.cameras; // Array<THREE.Camera>
+      // gltf.asset; // Object
+
+      console.log((gltf.scene));
+
+      // console.log(JSON.stringify(getSimplifiedJson(model)));
 
       render();
     });
@@ -234,6 +262,9 @@ function animate() {
   composer.render();
 
   stats.end();
+
+  // mixer.update(1/60);
+
 }
 
 function getSimplifiedJson(o) {
@@ -261,7 +292,7 @@ function getSimplifiedJson(o) {
 
   return {
     name: o.name,
-    meshName: meshName,
+    // meshName: meshName,
     children: children,
   };
 }
@@ -302,4 +333,74 @@ function findObject(searchString) {
   // animate();
   // return searchResults;
   console.log(selectedObjects);
+}
+
+function findObjects(searchTerms) {
+  const searchStringLower = searchTerms.map(term => term.toLowerCase());
+  selectedObjects = [];
+
+  scene.traverse(function (object) {
+    if (object.isMesh == true) {
+      const objectNameLower = object.name.toLowerCase();
+      if (searchStringLower.some(term => objectNameLower.includes(term))) {
+        selectedObjects.push(object);
+      }
+    }
+  });
+
+  if (selectedObjects.length > 0) {
+    outlinePass.selectedObjects = selectedObjects;
+  }
+
+  // console.log(selectedObjects);
+  // You can perform other actions here if needed
+}
+
+
+function testFunction() {
+
+  // let response = ["piston001", "piston002", "piston003", "piston004", "piston005", "piston006", "piston007", "piston008", "crankshaft", "crankHolder001", "crankHolder002", "crankHolder003", "crankHolder004", "crankHolderBolt001", "crankHolderBolt002", "crankHolderBolt003", "crankHolderBolt004", "crankHolderBolt005", "crankHolderBolt006", "crankHolderBolt007", "crankHolderBolt008", "crankHolderBolt009", "crankHolderBolt010", "crankHolderBolt011", "crankHolderBolt012", "crankHolderBolt013", "crankHolderBolt014", "crankHolderBolt015", "crankHolderBolt016"];
+  // findObjects(response);
+
+  // find cylinderHeadCoverRight
+  let obj;
+
+  scene.traverse(function (object) {
+    if (object.name == "cylinderHeadCoverRight") {
+      obj = object;
+    }
+  });
+
+  console.log(obj);
+
+  let mesh = obj.children[0];
+
+  // Check if the mesh and its material are defined
+  if (mesh && mesh.material) {
+    // Clone the material
+    var newMaterial = mesh.material.clone();
+
+    // Set the color of the new material
+    newMaterial.color.set(0x00ff00); // Red color in hexadecimal
+
+    // Apply the new material to the mesh
+    mesh.material = newMaterial;
+
+    // If the object has multiple materials
+    if (Array.isArray(mesh.material)) {
+        mesh.material = mesh.material.map(material => material.clone());
+        mesh.material.forEach(material => {
+            material.color.set(0xff0000); // Change each material's color
+        });
+    }
+}
+
+
+  // this returns a THREE.3DObject
+  // now we want to change its color to green
+
+
+
+  
+
 }
