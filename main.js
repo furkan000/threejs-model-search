@@ -71,7 +71,7 @@ gui.add(params, "usePatternTexture").onChange(function (value) {
 
 gui.add(params, "search").onChange(findObject);
 
-gui.add(params,'testFunction');
+gui.add(params, 'testFunction');
 
 function Configuration() {
   this.visibleEdgeColor = "#ffffff";
@@ -144,23 +144,23 @@ function init() {
 
       scene.add(model);
 
-      
+
       mixer = new THREE.AnimationMixer(model);
       let clips = gltf.animations;
-      clips.forEach( function ( clip ) {
-        mixer.clipAction( clip ).play();
-      } );
-      
+      clips.forEach(function (clip) {
+        mixer.clipAction(clip).play();
+      });
 
-      console.log(gltf.animations);
-      
+
+      // console.log(gltf.animations);
+
       // gltf.animations; // Array<THREE.AnimationClip>
       // gltf.scene; // THREE.Group
       // gltf.scenes; // Array<THREE.Group>
       // gltf.cameras; // Array<THREE.Camera>
       // gltf.asset; // Object
 
-      console.log((gltf.scene));
+      // console.log((gltf.scene));
 
       // console.log(JSON.stringify(getSimplifiedJson(model)));
 
@@ -388,19 +388,61 @@ function testFunction() {
 
     // If the object has multiple materials
     if (Array.isArray(mesh.material)) {
-        mesh.material = mesh.material.map(material => material.clone());
-        mesh.material.forEach(material => {
-            material.color.set(0xff0000); // Change each material's color
-        });
+      mesh.material = mesh.material.map(material => material.clone());
+      mesh.material.forEach(material => {
+        material.color.set(0xff0000); // Change each material's color
+      });
     }
+  }
 }
 
 
-  // this returns a THREE.3DObject
-  // now we want to change its color to green
 
 
 
-  
 
+// ########## CHAT FUNCTIONALITY ##########
+
+
+let chatInput = document.getElementById('chat-input');
+
+
+chatInput.addEventListener('keydown', function (event) {
+if (event.key === 'Enter') {
+  console.log("enter")
+  sendMessage(chatInput.value); // Replace with the function you want to trigger
+  event.preventDefault(); // Prevent the Enter key from creating a new line
+  chatInput.value = ''; // Clear the input field
+}
+});
+
+function sendMessage(message) {
+  makeRequest("http://localhost:5000/", message)
+  .then(handleResponse)
+  .catch(handleError);
+}
+
+function makeRequest(url, data) {
+  return fetch(url, {
+      method: "POST",
+      headers: {
+          "Content-Type": "text/plain"
+      },
+      body: data
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      return response.text();
+  });
+}
+
+function handleError(e) {
+  console.log(e)
+}
+
+function handleResponse(res) {
+  console.log(res);
+  findObjects(JSON.parse(res))
 }

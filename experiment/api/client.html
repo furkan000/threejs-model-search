@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Echo Client</title>
+</head>
+<body>
+    <h2>Echo Client</h2>
+    <input type="text" id="inputText" placeholder="Enter text">
+    <button onclick="sendData()">Send</button>
+    <p>Response: <span id="response"></span></p>
+
+    <script>
+        function sendData() {
+            const data = JSON.stringify({ "text": document.getElementById("inputText").value });
+            makeRequest("http://localhost:5000/echo", data)
+                .then(handleResponse)
+                .catch(handleError);
+        }
+
+        function makeRequest(url, data) {
+            return fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: data
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+        }
+
+        function handleResponse(jsonResponse) {
+            document.getElementById("response").innerText = JSON.stringify(jsonResponse);
+        }
+
+        function handleError(error) {
+            console.error('Fetch Error:', error);
+            document.getElementById("response").innerText = 'Error: ' + error.message;
+        }
+    </script>
+</body>
+</html>

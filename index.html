@@ -8,17 +8,13 @@
         margin: 0;
       }
     </style>
-    <!-- <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@v0.149.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@v0.149.0/examples/jsm/"
-        }
-      }
-    </script> -->
+    <link rel="stylesheet" type="text/css" href="chat.css">
   </head>
   <body>
     <script type="module" src="/main.js"></script>
-    <script type="module" src="/chat.js"></script>
+    <div id="chat-bar">
+      <input type="text" id="chat-input" placeholder="Message Chat...">
+    </div>
+    <script src="chat.js"></script>
   </body>
 </html>
