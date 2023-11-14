@@ -12,9 +12,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
-// import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 
 let container, stats;
@@ -335,7 +333,26 @@ function findObject(searchString) {
   console.log(selectedObjects);
 }
 
-function findObjects(searchTerms) {
+
+
+
+// ############ INTERFACE ############
+
+setTimeout(function () {
+  testFunction();
+}, 300);
+
+
+function testFunction() {
+  // let response = ["piston001", "piston002", "piston003", "piston004", "piston005", "piston006", "piston007", "piston008", "crankshaft", "crankHolder001", "crankHolder002", "crankHolder003", "crankHolder004", "crankHolderBolt001", "crankHolderBolt002", "crankHolderBolt003", "crankHolderBolt004", "crankHolderBolt005", "crankHolderBolt006", "crankHolderBolt007", "crankHolderBolt008", "crankHolderBolt009", "crankHolderBolt010", "crankHolderBolt011", "crankHolderBolt012", "crankHolderBolt013", "crankHolderBolt014", "crankHolderBolt015", "crankHolderBolt016"];
+  // recolor(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], 0x00ff00);
+  // resize(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], 2, 2, 2); // Resize objects with names "object1", "object2", and "object3"
+  // rotate(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], Math.PI / 4, 0, 0); // Rotate objects with names "object1", "object2", and "object3" by 45 degrees around the X-axis
+  // move(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], 1*10, -0.5*10, 2*10); // Move objects with names "object1", "object2", and "object3"
+  // hide(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"]); // Hide objects with names "cylinderHeadCoverleft", "cylinderHeadCoverRight", and "engineBackCover"
+}
+
+function highlight(list) {
   const searchStringLower = searchTerms.map(term => term.toLowerCase());
   selectedObjects = [];
 
@@ -351,91 +368,100 @@ function findObjects(searchTerms) {
   if (selectedObjects.length > 0) {
     outlinePass.selectedObjects = selectedObjects;
   }
-
-  // console.log(selectedObjects);
-  // You can perform other actions here if needed
 }
 
-
-function testFunction() {
-
-  // let response = ["piston001", "piston002", "piston003", "piston004", "piston005", "piston006", "piston007", "piston008", "crankshaft", "crankHolder001", "crankHolder002", "crankHolder003", "crankHolder004", "crankHolderBolt001", "crankHolderBolt002", "crankHolderBolt003", "crankHolderBolt004", "crankHolderBolt005", "crankHolderBolt006", "crankHolderBolt007", "crankHolderBolt008", "crankHolderBolt009", "crankHolderBolt010", "crankHolderBolt011", "crankHolderBolt012", "crankHolderBolt013", "crankHolderBolt014", "crankHolderBolt015", "crankHolderBolt016"];
-  // findObjects(response);
-
-  // find cylinderHeadCoverRight
-  let obj;
-
+function recolor(objectNames, color) {
   scene.traverse(function (object) {
-    if (object.name == "cylinderHeadCoverRight") {
-      obj = object;
-    }
-  });
-
-  console.log(obj);
-
-  let mesh = obj.children[0];
-
-  // Check if the mesh and its material are defined
-  if (mesh && mesh.material) {
-    // Clone the material
-    var newMaterial = mesh.material.clone();
-
-    // Set the color of the new material
-    newMaterial.color.set(0x00ff00); // Red color in hexadecimal
-
-    // Apply the new material to the mesh
-    mesh.material = newMaterial;
-
-    // If the object has multiple materials
-    if (Array.isArray(mesh.material)) {
-      mesh.material = mesh.material.map(material => material.clone());
-      mesh.material.forEach(material => {
-        material.color.set(0xff0000); // Change each material's color
+    if (objectNames.includes(object.name)) {
+      object.traverse(function (child) {
+        if (child instanceof THREE.Mesh && child.material) {
+          // Clone the material
+          var newMaterial = child.material.clone();
+          // Set the color of the new material
+          newMaterial.color.set(color);
+          // Apply the new material to the mesh
+          child.material = newMaterial;
+          // If the object has multiple materials
+          if (Array.isArray(child.material)) {
+            child.material = child.material.map(material => {
+              const newMaterial = material.clone();
+              newMaterial.color.set(color);
+              return newMaterial;
+            });
+          }
+        }
       });
     }
-  }
+  });
 }
 
+function resize(objectNames, scaleX, scaleY, scaleZ) {
+  scene.traverse(function (object) {
+    if (objectNames.includes(object.name)) {
+      object.scale.set(scaleX, scaleY, scaleZ);
+    }
+  });
+}
 
+function rotate(objectNames, rotationX, rotationY, rotationZ) {
+  scene.traverse(function (object) {
+    if (objectNames.includes(object.name)) {
+      object.rotation.set(rotationX, rotationY, rotationZ);
+    }
+  });
+}
 
+function move(objectNames, translateX, translateY, translateZ) {
+  scene.traverse(function (object) {
+    if (objectNames.includes(object.name)) {
+      object.position.x += translateX;
+      object.position.y += translateY;
+      object.position.z += translateZ;
+    }
+  });
+}
 
+function hide(objectNames) {
+  scene.traverse(function (object) {
+    if (objectNames.includes(object.name)) {
+      object.visible = false;
+    }
+  });
+}
 
 
 // ########## CHAT FUNCTIONALITY ##########
-
-
 let chatInput = document.getElementById('chat-input');
 
-
 chatInput.addEventListener('keydown', function (event) {
-if (event.key === 'Enter') {
-  console.log("enter")
-  sendMessage(chatInput.value); // Replace with the function you want to trigger
-  event.preventDefault(); // Prevent the Enter key from creating a new line
-  chatInput.value = ''; // Clear the input field
-}
+  if (event.key === 'Enter') {
+    console.log("enter")
+    sendMessage(chatInput.value); // Replace with the function you want to trigger
+    event.preventDefault(); // Prevent the Enter key from creating a new line
+    chatInput.value = ''; // Clear the input field
+  }
 });
 
 function sendMessage(message) {
   makeRequest("http://localhost:5000/", message)
-  .then(handleResponse)
-  .catch(handleError);
+    .then(handleResponse)
+    .catch(handleError);
 }
 
 function makeRequest(url, data) {
   return fetch(url, {
-      method: "POST",
-      headers: {
-          "Content-Type": "text/plain"
-      },
-      body: data
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain"
+    },
+    body: data
   })
-  .then(response => {
+    .then(response => {
       if (!response.ok) {
-          throw new Error('Network response was not ok');
+        throw new Error('Network response was not ok');
       }
       return response.text();
-  });
+    });
 }
 
 function handleError(e) {
