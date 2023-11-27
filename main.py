@@ -21,19 +21,38 @@ chat_model = ChatOpenAI()
 
 
 # user_input = "Find me the piston and the crankshaft."
-user_input = "Which parts are the plastic cover on the very top of the engine?"
+# user_input = "Which parts are the plastic cover on the very top of the engine?"
 
+available_functions = """
+highlight objectNames
+hide objectNames
+recolor objectNames color
+resize objectNames x y z
+rotate objectNames x y z
+move objectNames x y z
+playAnimation objectNames
+"""
 
-
-prompt = """
-I have the following JSON file describing a 3D model:
+prompt_placeholder = """
+I have the following JSON file describing a 3D model of a motor which has 8 pistons.
 {txt}
 The user asks you the following question: 
 ###
 "{user_input}"
-###. 
-Your answer should only be a list of strings that looks like this: ["part1", "part2", "part3"] and nothing else. If the answer is too long then make sure to only return the 30 most important parts and make sure to close the list.
+###.
+You have the following functions available:
+{available_functions}
+You can execute multiple function calls but make sure to put each call on a seperate lines. 
+Animating and highlighting are great to show a user where a part is located. Dont rotate, hide, recolor without a reason.
+Call functions like these following examples, make sure to only use whitespace when separating parameters. Do not use whitespace between list items. 
+recolor ['name1','name2'] 0x00ff00
+resize ['name1','name2'] 1.5 -1.5 0.5
+Only answer in function calls, do not add any other text.
 """
+
+# Your answer should only be a list of strings that looks like this: ["part1","part2", "part3"] and nothing else. If the answer is too long then make sure to only return the 30 most important parts and make sure to close the list.
+
+
 
 # print(prompt)
 
@@ -54,11 +73,20 @@ def handlePost():
 
 
 def promptLLM(user_query):
-    # This function will process the prompt
-    # For now, it just echoes the prompt
-    answer = llm.predict(prompt.format(txt=txt, user_input=user_query))
+    prompt = prompt_placeholder.format(txt=txt, user_input=user_query, available_functions=available_functions)
+    # print("prompt:\n" + prompt)
+    answer = llm.predict(prompt)
+    # answer = """highlight ['cylinderHeadBoltRight001', 'cylinderHeadBoltRight002', 'cylinderHeadBoltRight003','cylinderHeadBoltRight004','cylinderHeadBoltLeft001','cylinderHeadBoltLeft002','cylinderHeadBoltLeft003','cylinderHeadBoltLeft004'] 
+# recolor ['cylinderHeadBoltRight001', 'cylinderHeadBoltRight002', 'cylinderHeadBoltRight003','cylinderHeadBoltRight004','cylinderHeadBoltLeft001','cylinderHeadBoltLeft002','cylinderHeadBoltLeft003','cylinderHeadBoltLeft004'] 0x0000FF
+# """
     print("answer: " + answer)
     return answer
+    # return "test"
+
+
+# user_query = "highlight and recolor head gasket"
+# print(llm.predict( prompt_placeholder.format(txt=txt, user_input=user_query, available_functions=available_functions)))
+
 
 
 if __name__ == '__main__':

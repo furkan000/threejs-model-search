@@ -15,11 +15,24 @@ import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 
+var l = function () {
+  console.log.apply(console, arguments);
+}
+
+
 let container, stats;
 let camera, scene, renderer, controls;
 let composer, effectFXAA, outlinePass;
 let model;
 let mixer;
+
+let clips;
+
+
+
+let hideGui = true;
+
+
 
 // Highlight & GUI
 
@@ -32,8 +45,8 @@ const group = new THREE.Group();
 
 const params = {
   edgeStrength: 10.0,
-  edgeGlow: 1.0,
-  edgeThickness: 4.0,
+  edgeGlow: 0.245,
+  edgeThickness: 1.0,
   pulsePeriod: 0,
   rotate: false,
   usePatternTexture: false,
@@ -41,9 +54,29 @@ const params = {
   testFunction: testFunction
 };
 
+
+// wait one second
+setTimeout(function () {
+  outlinePass.edgeStrength = Number(params.edgeStrength);
+outlinePass.edgeGlow = Number(params.edgeGlow);
+outlinePass.edgeThickness = Number(params.edgeThickness);
+outlinePass.pulsePeriod = Number(params.pulsePeriod);
+outlinePass.visibleEdgeColor.set("#ffffff");
+outlinePass.hiddenEdgeColor.set("#190a05");
+}, 1000);
+
+
 // Init gui
 
 const gui = new GUI({ width: 280 });
+
+if (hideGui) {
+  gui.hide();
+}
+
+
+
+
 
 gui.add(params, "edgeStrength", 0.01, 10).onChange(function (value) {
   outlinePass.edgeStrength = Number(value);
@@ -90,6 +123,11 @@ gui.addColor(conf, "hiddenEdgeColor").onChange(function (value) {
   outlinePass.hiddenEdgeColor.set(value);
 });
 
+
+
+
+
+
 init();
 animate();
 
@@ -120,8 +158,7 @@ function init() {
 
 
 
-
-  new RGBELoader().setPath("textures/").load("royal_esplanade_1k.hdr", function (texture) {
+  new RGBELoader().setPath("textures/").load("autoshop_01_4k.hdr", function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
 
     scene.background = texture;
@@ -144,13 +181,11 @@ function init() {
 
 
       mixer = new THREE.AnimationMixer(model);
-      let clips = gltf.animations;
-      clips.forEach(function (clip) {
-        mixer.clipAction(clip).play();
-      });
+      clips = gltf.animations;
 
 
-      // console.log(gltf.animations);
+
+      console.log(gltf.animations);
 
       // gltf.animations; // Array<THREE.AnimationClip>
       // gltf.scene; // THREE.Group
@@ -166,10 +201,14 @@ function init() {
     });
   });
 
+
+
   window.addEventListener("resize", onWindowResize);
 
-  stats = new Stats();
-  container.appendChild(stats.dom);
+  if (!hideGui) {
+    stats = new Stats();
+  }
+  // container.appendChild(stats.dom);
 
   // postprocessing
 
@@ -198,7 +237,7 @@ function init() {
   window.addEventListener("resize", onWindowResize);
 
   renderer.domElement.style.touchAction = "none";
-  renderer.domElement.addEventListener("pointermove", onPointerMove);
+  // renderer.domElement.addEventListener("pointermove", onPointerMove);
 
   function onPointerMove(event) {
     if (event.isPrimary === false) return;
@@ -246,23 +285,17 @@ function render() {
 
 function animate() {
   requestAnimationFrame(animate);
-
-  stats.begin();
-
+  // stats.begin();
   const timer = performance.now();
-
   if (params.rotate) {
     group.rotation.y = timer * 0.0001;
   }
-
   controls.update();
-
   composer.render();
-
-  stats.end();
-
-  // mixer.update(1/60);
-
+  // stats.end();
+  if (mixer != null) {
+    mixer.update(1 / 100);
+  }
 }
 
 function getSimplifiedJson(o) {
@@ -330,7 +363,7 @@ function findObject(searchString) {
   // selectedObjects = searchResults;
   // animate();
   // return searchResults;
-  console.log(selectedObjects);
+  // console.log(selectedObjects);
 }
 
 
@@ -338,21 +371,8 @@ function findObject(searchString) {
 
 // ############ INTERFACE ############
 
-setTimeout(function () {
-  testFunction();
-}, 300);
-
-
-function testFunction() {
-  // let response = ["piston001", "piston002", "piston003", "piston004", "piston005", "piston006", "piston007", "piston008", "crankshaft", "crankHolder001", "crankHolder002", "crankHolder003", "crankHolder004", "crankHolderBolt001", "crankHolderBolt002", "crankHolderBolt003", "crankHolderBolt004", "crankHolderBolt005", "crankHolderBolt006", "crankHolderBolt007", "crankHolderBolt008", "crankHolderBolt009", "crankHolderBolt010", "crankHolderBolt011", "crankHolderBolt012", "crankHolderBolt013", "crankHolderBolt014", "crankHolderBolt015", "crankHolderBolt016"];
-  // recolor(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], 0x00ff00);
-  // resize(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], 2, 2, 2); // Resize objects with names "object1", "object2", and "object3"
-  // rotate(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], Math.PI / 4, 0, 0); // Rotate objects with names "object1", "object2", and "object3" by 45 degrees around the X-axis
-  // move(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"], 1*10, -0.5*10, 2*10); // Move objects with names "object1", "object2", and "object3"
-  // hide(["cylinderHeadCoverleft", "cylinderHeadCoverRight", "engineBackCover"]); // Hide objects with names "cylinderHeadCoverleft", "cylinderHeadCoverRight", and "engineBackCover"
-}
-
-function highlight(list) {
+// TODO: fix
+function highlight(searchTerms) {
   const searchStringLower = searchTerms.map(term => term.toLowerCase());
   selectedObjects = [];
 
@@ -429,13 +449,43 @@ function hide(objectNames) {
   });
 }
 
+function playAnimations(clipNames) {
+  clipNames.forEach(clipName => {
+    let selectedClip = clips.find(clip => clip.name === clipName);
+    if (selectedClip) {
+      const action = mixer.clipAction(selectedClip);
+      action.clampWhenFinished = true;
+      action.setLoop(THREE.LoopOnce);
+      action.play();
+    }
+  });
+
+  // clips.forEach(function (clip) {
+  //   mixer.clipAction(clip).play();
+  // });
+
+}
+
+
+
+let functionInterface = {
+  highlight: highlight,
+  recolor: recolor,
+  resize: resize,
+  rotate: rotate,
+  move: move,
+  hide: hide,
+  playAnimations: playAnimations,
+  playAnimation: playAnimation
+}
+
 
 // ########## CHAT FUNCTIONALITY ##########
 let chatInput = document.getElementById('chat-input');
 
 chatInput.addEventListener('keydown', function (event) {
   if (event.key === 'Enter') {
-    console.log("enter")
+    // console.log("enter")
     sendMessage(chatInput.value); // Replace with the function you want to trigger
     event.preventDefault(); // Prevent the Enter key from creating a new line
     chatInput.value = ''; // Clear the input field
@@ -449,19 +499,21 @@ function sendMessage(message) {
 }
 
 function makeRequest(url, data) {
+  showToast("Processing...");
+
   return fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "text/plain"
     },
     body: data
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.text();
-    });
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    // console.log(response);
+    return response.text();
+  });
 }
 
 function handleError(e) {
@@ -469,6 +521,183 @@ function handleError(e) {
 }
 
 function handleResponse(res) {
-  console.log(res);
-  findObjects(JSON.parse(res))
+  // console.log(res);
+  executeFunctionCalls(res);
 }
+
+// ########## PARSE RESPONSE ##########
+
+function executeFunctionCalls(response) {
+  console.log(response);
+
+  let lines = response.split('\n');
+  //trim whitespace at beginning and end of each line
+  lines = lines.map(line => line.trim());
+  // remove empty lines
+  lines = lines.filter(line => line != '');
+
+  for (let i = 0; i < lines.length; i++) {
+    showToast(lines[i])
+  }
+
+  // remove unnecessary whitespace
+  lines = lines.map(line => removeWhitespace(line));
+  // split each line into an array of arguments
+  lines = lines.map(line => splitString(line))
+  // convert arguments to correct types
+
+  l(lines)
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    lines[i] = line.map(arg => {
+      if (arg.startsWith('[')) {
+        console.log(arg)
+        arg = arg.toString().replace(/'/g, '"');
+        arg = JSON.parse(arg);
+      } else if (arg.startsWith('0x')) {
+        arg = parseInt(arg);
+      } else if (isNumeric(arg)) {
+        arg = parseFloat(arg);
+      }
+      return arg;
+    });
+  }
+
+  console.log(lines);
+
+  // call functions
+  for (let line of lines) {
+    let func = line[0];
+    // console.log(func);
+    let args = line.slice(1);
+    functionInterface[func](...args);
+  }
+}
+
+function removeWhitespace(str) {
+  let insideBrackets = false;
+  let insideQuotes = false;
+  let quoteChar = '';
+  let result = '';
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+
+    // Toggle insideBrackets flag when encountering [ or ]
+    if (char === '[' && !insideQuotes) {
+      insideBrackets = true;
+      result += char;
+      continue;
+    } else if (char === ']' && !insideQuotes) {
+      insideBrackets = false;
+      result += char;
+      continue;
+    }
+
+    // Toggle insideQuotes flag when encountering ' or " if not already inside a different quote
+    if ((char === "'" || char === '"') && (!insideQuotes || quoteChar === char)) {
+      insideQuotes = !insideQuotes;
+      quoteChar = insideQuotes ? char : '';
+    }
+
+    // If inside brackets but not inside quotes, skip whitespace characters
+    if (insideBrackets && !insideQuotes && char === ' ') {
+      continue;
+    }
+
+    result += char;
+  }
+
+  return result;
+}
+
+function isNumeric(str) {
+  if (typeof str != "string") return false // we only process strings!  
+  return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+    !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+}
+
+function splitString(str) {
+  // Regular expression to match text inside brackets or words outside
+  const regex = /\[.*?\]|[\w]+/g;
+  // Find all matches
+  const matches = str.match(regex);
+
+  // Check if matches were found
+  if (matches) {
+    // Process each match
+    return matches.map(match => {
+      // Remove leading and trailing spaces
+      return match.trim();
+    });
+  } else {
+    // Return an empty array if no matches were found
+    return [];
+  }
+}
+
+
+setTimeout(function () {
+  testFunction();
+}, 1000);
+
+
+
+function findObjectByName(name) {
+  let found = null;
+  scene.traverse(function (object) {
+      if (object.name === name) {
+          found = object;
+      }
+  });
+  return found;
+}
+
+
+
+function testFunction() {
+
+
+
+  
+  // let obj = findObjectByName("cylinderHeadRight");
+  
+  // mixer = new THREE.AnimationMixer(obj);
+  // let action = mixer.clipAction(clips[0])
+  // action.clampWhenFinished = true;
+  // action.setLoop(THREE.LoopOnce);
+  // action.play();
+
+  // console.log(obj);
+  
+  // playAnimation(['piston001', 'piston002', 'piston003', 'piston004', 'piston005', 'piston006', 'piston007', 'piston008']);
+
+
+  // let response = `rotate ['cylinderHeadRight','cylinderHeadLeft','cylinderHeadCoverRight','cylinderHeadCoverleft'] 0 0 180
+  // highlight ['cylinderHeadRight','cylinderHeadLeft','cylinderHeadCoverRight','cylinderHeadCoverleft']`;
+  // let response = `
+  // // playAnimations ['Take 001']`;
+  // executeFunctionCalls(response);
+}
+
+
+// let mixer; // Declare the mixer outside the function so it can be accessed globally
+
+function playAnimation(objectNames) {
+  objectNames.forEach(objectName => {
+    let obj = findObjectByName(objectName);
+    if (obj) {
+      let action = mixer.clipAction(clips[0], obj); // Use the object as the second argument
+      action.clampWhenFinished = true;
+      action.setLoop(THREE.LoopOnce);
+      action.play();
+    }
+  });
+}
+
+
+
+  // clips.forEach(function (clip) {
+  //   mixer.clipAction(clip).play();
+  // });
