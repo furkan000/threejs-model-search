@@ -42,6 +42,8 @@ const mouse = new THREE.Vector2();
 
 const obj3d = new THREE.Object3D();
 const group = new THREE.Group();
+const loader = new GLTFLoader();
+
 
 const params = {
   edgeStrength: 10.0,
@@ -150,7 +152,7 @@ function init() {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.addEventListener("change", render); // use if there is no animation loop
   controls.minDistance = 0;
-  controls.maxDistance = 1;
+  controls.maxDistance = 10;
   controls.enablePan = false;
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
@@ -167,40 +169,51 @@ function init() {
     render();
 
     // model
+  });
 
 
 
-    const loader = new GLTFLoader().setPath("Engine/");
-    loader.load("scene.gltf", async function (gltf) {
+
+
+  function loadGLTFModel(path) {
+    loader.load(path, async function (gltf) {
+      if(model != undefined) {
+        scene.remove(model);
+      }
+  
       model = gltf.scene;
-
       // wait until the model can be added to the scene without blocking due to shader compilation
       renderer.compile(model, camera, scene);
-
+      
+  
+      
+  
       scene.add(model);
-
-
       mixer = new THREE.AnimationMixer(model);
       clips = gltf.animations;
-
-
-
+  
+  
+  
       console.log(gltf.animations);
-
       // gltf.animations; // Array<THREE.AnimationClip>
       // gltf.scene; // THREE.Group
       // gltf.scenes; // Array<THREE.Group>
       // gltf.cameras; // Array<THREE.Camera>
-      // gltf.asset; // Object
-
+      
       // console.log((gltf.scene));
-
       // console.log(JSON.stringify(getSimplifiedJson(model)));
-
+  
       render();
-    });
-  });
+    });  
+  }
 
+  // loadGLTFModel("models/Engine/scene.gltf");
+  // loadGLTFModel("models/DamagedHelmet/DamagedHelmet.gltf");
+  loadGLTFModel("models/downloaded/b16d287497b24d8b9e2b94baf7f6b3e2.glb")
+
+
+  // const loader = new GLTFLoader().setPath("models/");
+  
 
 
   window.addEventListener("resize", onWindowResize);
