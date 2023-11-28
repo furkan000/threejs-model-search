@@ -30,7 +30,7 @@ let clips;
 
 
 
-let hideGui = true;
+let hideGui = false;
 
 
 
@@ -60,11 +60,11 @@ const params = {
 // wait one second
 setTimeout(function () {
   outlinePass.edgeStrength = Number(params.edgeStrength);
-outlinePass.edgeGlow = Number(params.edgeGlow);
-outlinePass.edgeThickness = Number(params.edgeThickness);
-outlinePass.pulsePeriod = Number(params.pulsePeriod);
-outlinePass.visibleEdgeColor.set("#ffffff");
-outlinePass.hiddenEdgeColor.set("#190a05");
+  outlinePass.edgeGlow = Number(params.edgeGlow);
+  outlinePass.edgeThickness = Number(params.edgeThickness);
+  outlinePass.pulsePeriod = Number(params.pulsePeriod);
+  outlinePass.visibleEdgeColor.set("#ffffff");
+  outlinePass.hiddenEdgeColor.set("#190a05");
 }, 1000);
 
 
@@ -133,6 +133,41 @@ gui.addColor(conf, "hiddenEdgeColor").onChange(function (value) {
 init();
 animate();
 
+
+
+function loadGLTFModel(path) {
+  loader.load(path, async function (gltf) {
+    if (model != undefined) {
+      scene.remove(model);
+    }
+
+    model = gltf.scene;
+    // wait until the model can be added to the scene without blocking due to shader compilation
+    renderer.compile(model, camera, scene);
+
+
+
+
+    scene.add(model);
+    mixer = new THREE.AnimationMixer(model);
+    clips = gltf.animations;
+
+
+
+    console.log(gltf.animations);
+    // gltf.animations; // Array<THREE.AnimationClip>
+    // gltf.scene; // THREE.Group
+    // gltf.scenes; // Array<THREE.Group>
+    // gltf.cameras; // Array<THREE.Camera>
+
+    // console.log((gltf.scene));
+    // console.log(JSON.stringify(getSimplifiedJson(model)));
+
+    render();
+  });
+}
+
+
 function init() {
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -152,7 +187,7 @@ function init() {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.addEventListener("change", render); // use if there is no animation loop
   controls.minDistance = 0;
-  controls.maxDistance = 10;
+  // controls.maxDistance = 100;
   controls.enablePan = false;
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
@@ -175,45 +210,13 @@ function init() {
 
 
 
-  function loadGLTFModel(path) {
-    loader.load(path, async function (gltf) {
-      if(model != undefined) {
-        scene.remove(model);
-      }
-  
-      model = gltf.scene;
-      // wait until the model can be added to the scene without blocking due to shader compilation
-      renderer.compile(model, camera, scene);
-      
-  
-      
-  
-      scene.add(model);
-      mixer = new THREE.AnimationMixer(model);
-      clips = gltf.animations;
-  
-  
-  
-      console.log(gltf.animations);
-      // gltf.animations; // Array<THREE.AnimationClip>
-      // gltf.scene; // THREE.Group
-      // gltf.scenes; // Array<THREE.Group>
-      // gltf.cameras; // Array<THREE.Camera>
-      
-      // console.log((gltf.scene));
-      // console.log(JSON.stringify(getSimplifiedJson(model)));
-  
-      render();
-    });  
-  }
-
   // loadGLTFModel("models/Engine/scene.gltf");
   // loadGLTFModel("models/DamagedHelmet/DamagedHelmet.gltf");
   loadGLTFModel("models/downloaded/b16d287497b24d8b9e2b94baf7f6b3e2.glb")
 
 
   // const loader = new GLTFLoader().setPath("models/");
-  
+
 
 
   window.addEventListener("resize", onWindowResize);
@@ -506,10 +509,23 @@ chatInput.addEventListener('keydown', function (event) {
 });
 
 function sendMessage(message) {
-  makeRequest("http://localhost:5000/", message)
-    .then(handleResponse)
-    .catch(handleError);
+  if (message.startsWith("download ")) {
+    // remove download from message at the beginning
+    message = message.substring(9);
+    makeRequest("http://localhost:5001/", message)
+      .then(handleDownloadResponse)
+      .catch(handleError);
+  } else {
+    makeRequest("http://localhost:5000/", message)
+      .then(handleChatResponse)
+      .catch(handleError);
+  }
+
 }
+
+
+
+
 
 function makeRequest(url, data) {
   showToast("Processing...");
@@ -533,10 +549,17 @@ function handleError(e) {
   console.log(e)
 }
 
-function handleResponse(res) {
+function handleChatResponse(res) {
   // console.log(res);
   executeFunctionCalls(res);
 }
+
+
+function handleDownloadResponse(res) {
+  let location = "models/downloaded/" + res;
+  loadGLTFModel(location)
+}
+
 
 // ########## PARSE RESPONSE ##########
 
@@ -660,9 +683,9 @@ setTimeout(function () {
 function findObjectByName(name) {
   let found = null;
   scene.traverse(function (object) {
-      if (object.name === name) {
-          found = object;
-      }
+    if (object.name === name) {
+      found = object;
+    }
   });
   return found;
 }
@@ -673,9 +696,9 @@ function testFunction() {
 
 
 
-  
+
   // let obj = findObjectByName("cylinderHeadRight");
-  
+
   // mixer = new THREE.AnimationMixer(obj);
   // let action = mixer.clipAction(clips[0])
   // action.clampWhenFinished = true;
@@ -683,7 +706,7 @@ function testFunction() {
   // action.play();
 
   // console.log(obj);
-  
+
   // playAnimation(['piston001', 'piston002', 'piston003', 'piston004', 'piston005', 'piston006', 'piston007', 'piston008']);
 
 
@@ -711,6 +734,6 @@ function playAnimation(objectNames) {
 
 
 
-  // clips.forEach(function (clip) {
-  //   mixer.clipAction(clip).play();
-  // });
+// clips.forEach(function (clip) {
+//   mixer.clipAction(clip).play();
+// });

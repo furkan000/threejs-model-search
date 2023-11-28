@@ -45,16 +45,18 @@ def handlePost():
 
 
 def handlePrompt(user_query):
+    print("user: " + user_query)
     results = collection.query(query_texts=[user_query], n_results=1)
     flatten = lambda l: [item for sublist in l for item in sublist]
     top_id = results["ids"][0]
-    return download_objects(top_id)
+    object_name = download_objects(top_id)
+    print("object_name: " + object_name)
+    return str(object_name)
 
 
     # return str(results)
 
 
-# app.run(debug=True, port=5001)
 
 
 # print(flatten(results["documents"]))
@@ -70,13 +72,17 @@ def download_objects(ids):
 
     objects = objaverse.load_objects( uids=ids ) # download_processes=processes
     object_path = list(objects.values())[0]
+    # get file name
+    object_name = object_path.split("/")[-1]
+
     # copy file object_pathng path to ../threejs/models/downloaded
     shutil.copy(object_path, "../threejs/models/downloaded")
-
+    return object_name
 
     
     print(objects)
 
 
 
-handlePrompt("green chair")
+# handlePrompt("green chair")
+app.run(debug=True, port=5001)
