@@ -172,8 +172,9 @@ function init() {
   const container = document.createElement("div");
   document.body.appendChild(container);
 
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 2000);
   camera.position.set(-1.8, 0.6, 2.7);
+  // camera.position.set(0, 0, 0);
 
   scene = new THREE.Scene();
 

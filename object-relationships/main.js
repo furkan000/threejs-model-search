@@ -6,8 +6,12 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { GUI } from 'dat.gui'
 
 let camera, scene, renderer, loader;
+let models = [];
+let boxHelpers = [];
+let lastRelationship;
 
 init();
 render();
@@ -62,44 +66,89 @@ function init() {
 }
 
 function onWindowResize() {
-
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
     renderer.setSize(window.innerWidth, window.innerHeight);
-
     render();
-
 }
-
-let model;
 
 function loadModel(path) {
     loader.load(path, function (gltf) {
-        model = gltf.scene;
+        let model = gltf.scene;
         scene.add(model);
         render();
         model = gltf.scene;
+        // console.log(model);
+        models.push(model);
     });
-    return model;
 }
 
+function addGui() {
+    const gui = new GUI()
 
+    const guiData = {
+        scale: 1 // Initial scaling factor
+    };
 
-let chair = loadModel('chair.glb')
-console.log(model)
-let taxi = loadModel('taxi.glb')
+    const cubeFolder = gui.addFolder('Taxi')
+    cubeFolder.add(models[0].position, 'x', -5, 5).onChange(calculateRelationshipAndAddBoundingBoxes)
+    cubeFolder.add(models[0].position, 'y', -5, 5).onChange(calculateRelationshipAndAddBoundingBoxes)
+    cubeFolder.add(models[0].position, 'z', -5, 5).onChange(calculateRelationshipAndAddBoundingBoxes)
+    cubeFolder.add(guiData, 'scale', 0.1, 5).name('Taxi Scale').onChange((value) => { scaleTaxi(value); calculateRelationshipAndAddBoundingBoxes() })
+    cubeFolder.open()
+}
 
-const sphere = new THREE.SphereGeometry();
-const object = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial(0xff0000));
+function scaleTaxi(scalar) {
+    models[0].scale.set(scalar, scalar, scalar);
+    render();
+}
 
-let box = new THREE.BoxHelper(object, 0xffff00)
-scene.add(box)
-render()
+function convertBoxHelperToBox(boxHelper) {
+    const b = new THREE.Box3().setFromObject(boxHelper);
+    return new Box3D(b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z);
+}
 
+function calculateRelationshipAndAddBoundingBoxes() {
+    addBoundingBoxes(models);
+    let boxHelper1 = new THREE.BoxHelper(models[0], 0xffff00)
+    let boxHelper2 = new THREE.BoxHelper(models[1], 0xffff00)
+    let box1 = convertBoxHelperToBox(boxHelper1);
+    let box2 = convertBoxHelperToBox(boxHelper2);
 
+    if (lastRelationship != undefined && lastRelationship != box1.determineRelationship(box2)) {
+        Toastify({
+            text: box1.determineRelationship(box2),
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+        }).showToast();
+    }
+    lastRelationship = box1.determineRelationship(box2);
+}
 
+function addBoundingBoxes(models) {
+    boxHelpers.forEach(box => {
+        scene.remove(box)
+    });
+
+    models.forEach(model => {
+        let box = new THREE.BoxHelper(model, 0xffff00)
+        boxHelpers.push(box);
+        scene.add(box)
+    });
+    render();
+}
 
 function render() {
     renderer.render(scene, camera);
 }
+
+loadModel('chair.glb')
+loadModel('taxi.glb')
+
+// wait then do
+setTimeout(function () {
+    addGui();
+    calculateRelationshipAndAddBoundingBoxes();
+    render();
+}, 1000);
