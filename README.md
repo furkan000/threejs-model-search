@@ -13,4 +13,4 @@ Download glb from Objaverse from search.
 ThreeJS example of object relationship
 
 ### threejs
-one model and chatgpt
+one 3d asset and chatgpt
