@@ -6,13 +6,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-import concurrent.futures
-import ctypes
-# Assuming you're on a Unix-like system
-x11 = ctypes.cdll.LoadLibrary('libX11.so')
-x11.XInitThreads()
-import multiprocessing
-from multiprocessing import Pool
+
 
 def create_raymond_lights():
     thetas = np.pi * np.array([1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0])
@@ -129,66 +123,60 @@ def focus_camera_on_mesh(scene, mesh_node, distance=2):
 
     return camera_poses
 
-def render_meshes_from_scene(glb_path, output_dir, yfov=np.pi / 3.0, aspect_ratio=1.0, num_processes=None):
-    # Load the scene to enumerate meshes
-    trimesh_scene = trimesh.load(glb_path, process=False)
+def render_meshes_from_scene(glb_path, output_dir, yfov=np.pi / 3.0, aspect_ratio=1.0):
+    """
+    Renders individual meshes from a scene in a GLB file.
+
+    Args:
+    glb_path (str): Path to the GLB file.
+    output_dir (str): Directory to save the rendered images.
+    yfov (float, optional): Field of view in y direction. Default is pi/3.
+    aspect_ratio (float, optional): Aspect ratio of the camera. Default is 1.0.
+    """
+
+    # Load the scene
+    trimesh_scene = trimesh.load(glb_path)
     scene = pyrender.Scene().from_trimesh_scene(trimesh_scene)
+
+    # Add Raymond lights to the scene
+    raymond_lights = create_raymond_lights()  # Assuming this is defined elsewhere
+    for light_node in raymond_lights:
+        scene.add_node(light_node)
 
     # Create output directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Convert the set of nodes to a list to enable indexing
-    node_list = list(scene.get_nodes())
-
-    # Prepare a list of tasks for parallel execution
-    tasks = []
-    for index, node in enumerate(node_list):
-        if isinstance(node, pyrender.Node) and node.mesh is not None:
-            tasks.append((glb_path, output_dir, index, yfov, aspect_ratio))
-
-    # Use multiprocessing to render meshes in parallel
-    # num_processes can be specified; if None, it defaults to the number of CPU cores
-    with Pool(processes=num_processes) as pool:
-        pool.starmap(render_single_mesh, tasks)
-
-
-
-# The render_single_mesh function also needs to be updated to use the index
-def render_single_mesh(glb_path, output_dir, node_index, yfov, aspect_ratio):
-    # Load the scene
-    trimesh_scene = trimesh.load(glb_path, process=False)
-    scene = pyrender.Scene().from_trimesh_scene(trimesh_scene)
-
-    # Add Raymond lights to the scene
-    raymond_lights = create_raymond_lights()
-    for light_node in raymond_lights:
-        scene.add_node(light_node)
+    # Initialize an index for naming files
+    mesh_index = 0
 
     # Create a single camera instance
     camera = pyrender.PerspectiveCamera(yfov=yfov, aspectRatio=aspect_ratio)
     scene.add(camera)
 
-    # Convert the set of nodes to a list to enable indexing
-    node_list = list(scene.get_nodes())
+    # Iterate over each mesh node in the scene and render it
+    for node in scene.get_nodes():
+        if isinstance(node, pyrender.Node) and node.mesh is not None:
+            # Disable all other mesh nodes
+            for other_node in scene.get_nodes():
+                if other_node.mesh is not None and other_node != node:
+                    other_node.mesh.is_visible = False
 
-    # Find and render the specific mesh
-    node = node_list[node_index]
-    if isinstance(node, pyrender.Node) and node.mesh is not None:
-        # Focus camera on the current mesh
-        camera_poses = focus_camera_on_mesh(scene, node, 2)
+            node.mesh.is_visible = True
 
-        pose_index = 0
-        for pose in camera_poses:
-            scene.set_pose(scene.main_camera_node, pose)
-            # Render the scene with the current mesh
-            render_to_image(
-                scene, filename=f"{output_dir}/rendered_mesh_{node_index}_{pose_index}.png"
-            )
-            pose_index += 1
-    print("Finished rendering mesh", node_index)        
+            # Focus camera on the current mesh
+            camera_poses = focus_camera_on_mesh(scene, node, 2)  # Assuming this is defined elsewhere
+
+            pose_index = 0
+            for pose in camera_poses:
+                scene.set_pose(scene.main_camera_node, pose)
+                # Render the scene with the current mesh
+                render_to_image(
+                    scene, filename=f"{output_dir}/rendered_mesh_{mesh_index}_{pose_index}.png"
+                )
+                pose_index += 1
+
+            mesh_index += 1                
 
 # Usage
-# Usage - specifying the number of processes
-num_cores = 8  # for example, 8 processes
-render_meshes_from_scene("./cafeteria.glb", "./render", num_processes=num_cores)
+# render_meshes_from_scene("./cafeteria.glb", "./render")

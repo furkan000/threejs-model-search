@@ -34,9 +34,13 @@ function init() {
                 await renderer.compileAsync(model, camera, scene);
                 scene.add(model);
 
+                renderTreeView(model);
+
+
                 renderToFile();
 
                 render();
+
             });
 
         });
@@ -82,3 +86,83 @@ function renderToFile() {
         console.log('It\'s saved!');
     });
 }
+
+function getSimplifiedJson(o) {
+    if (o == null || o.type == "Mesh") return undefined;
+
+    let meshName = undefined;
+    let children = undefined;
+
+    if (o.children != null && o.children.length == 1 && o.children[0].type == "Mesh") {
+        meshName = o.children[0].name;
+    }
+
+    if (o.children != null && o.children.length > 0) {
+        children = o.children.map((c) => getSimplifiedJson(c));
+    }
+
+    // remove all null from children
+    if (children != null) {
+        children = children.filter((c) => c != null);
+    }
+    // if children is empty, set it to undefined
+    if (children != null && children.length == 0) {
+        children = undefined;
+    }
+
+    return {
+        name: o.name,
+        meshName: meshName,
+        children: children,
+    };
+}
+
+
+function buildTreeView(json, containerId) {
+    // Recursive function to process each node
+    function createNode(node) {
+        let element = document.createElement('li');
+        let span = document.createElement('span');
+        span.classList.add('caret');
+        span.textContent = node.name;
+        element.appendChild(span);
+
+        if (node.children && node.children.length > 0) {
+            let ul = document.createElement('ul');
+            ul.classList.add('nested');
+            node.children.forEach(child => {
+                ul.appendChild(createNode(child));
+            });
+            element.appendChild(ul);
+        }
+        return element;
+    }
+
+    // Clear existing content
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    // Start with the root node
+    let ul = document.createElement('ul');
+    ul.id = 'myUL';
+    ul.appendChild(createNode(json));
+    container.appendChild(ul);
+
+    // Add event listeners for toggling
+    var toggler = container.getElementsByClassName("caret");
+    for (let i = 0; i < toggler.length; i++) {
+        toggler[i].addEventListener("click", function() {
+            this.parentElement.querySelector(".nested").classList.toggle("active");
+            this.classList.toggle("caret-down");
+        });
+    }
+}
+
+
+
+function renderTreeView(model) {
+    console.log(getSimplifiedJson(model));
+    buildTreeView(getSimplifiedJson(model), 'tree-container');
+}
+
+

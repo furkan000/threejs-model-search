@@ -7,8 +7,8 @@ import gradio as gr
 dataset = load_dataset("huggingface/cats-image")
 image = dataset["test"]["image"][0]
 
-preprocessor = EfficientNetImageProcessor.from_pretrained("google/efficientnet-b0")
-model = EfficientNetForImageClassification.from_pretrained("google/efficientnet-b0")
+preprocessor = EfficientNetImageProcessor.from_pretrained("google/efficientnet-b4")
+model = EfficientNetForImageClassification.from_pretrained("google/efficientnet-b4")
 
 # Create a Gradio interface
 def classify_image(input_image):
