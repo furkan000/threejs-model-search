@@ -2,7 +2,6 @@ import trimesh
 import pyrender
 import numpy as np
 import matplotlib
-
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import os
@@ -38,7 +37,6 @@ def create_raymond_lights():
 
     return nodes
 
-
 def render_to_image(scene, filename="rendered_image.png", camera_pose=None):
     color, depth = pyrender.OffscreenRenderer(400, 400).render(scene)
     fig = plt.figure()
@@ -48,7 +46,6 @@ def render_to_image(scene, filename="rendered_image.png", camera_pose=None):
     # Use bbox_inches and pad_inches to remove extra padding around the image
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close(fig)
-
 
 def look_at(camera_position, target_position):
     # Convert positions to numpy arrays for easier calculations
@@ -81,7 +78,6 @@ def look_at(camera_position, target_position):
     camera_pose[:3, 3] = cam_pos
 
     return camera_pose
-
 
 # Function to move camera to focus on a single mesh
 def focus_camera_on_mesh(scene, mesh_node, distance=2):
@@ -127,60 +123,60 @@ def focus_camera_on_mesh(scene, mesh_node, distance=2):
 
     return camera_poses
 
+def render_meshes_from_scene(glb_path, output_dir, yfov=np.pi / 3.0, aspect_ratio=1.0):
+    """
+    Renders individual meshes from a scene in a GLB file.
 
-# Load scene
-trimesh_scene = trimesh.load("./cafeteria.glb")
-scene = pyrender.Scene().from_trimesh_scene(trimesh_scene)
+    Args:
+    glb_path (str): Path to the GLB file.
+    output_dir (str): Directory to save the rendered images.
+    yfov (float, optional): Field of view in y direction. Default is pi/3.
+    aspect_ratio (float, optional): Aspect ratio of the camera. Default is 1.0.
+    """
 
-# Add Raymond lights to the scene
-raymond_lights = create_raymond_lights()
-for light_node in raymond_lights:
-    scene.add_node(light_node)
+    # Load the scene
+    trimesh_scene = trimesh.load(glb_path)
+    scene = pyrender.Scene().from_trimesh_scene(trimesh_scene)
 
+    # Add Raymond lights to the scene
+    raymond_lights = create_raymond_lights()  # Assuming this is defined elsewhere
+    for light_node in raymond_lights:
+        scene.add_node(light_node)
 
-# Delete directory if it already exists
-# if os.path.exists('./render'):
-#     os.system('rm -rf ./render')
+    # Create output directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-# Create a new directory for the rendered images
-if not os.path.exists("./render"):
-    os.makedirs("./render")
+    # Initialize an index for naming files
+    mesh_index = 0
 
-# Initialize an index for naming files
-mesh_index = 0
+    # Create a single camera instance
+    camera = pyrender.PerspectiveCamera(yfov=yfov, aspectRatio=aspect_ratio)
+    scene.add(camera)
 
+    # Iterate over each mesh node in the scene and render it
+    for node in scene.get_nodes():
+        if isinstance(node, pyrender.Node) and node.mesh is not None:
+            # Disable all other mesh nodes
+            for other_node in scene.get_nodes():
+                if other_node.mesh is not None and other_node != node:
+                    other_node.mesh.is_visible = False
 
-# Create a single camera instance outside the loop
-camera = pyrender.PerspectiveCamera(yfov=np.pi / 3.0, aspectRatio=1.0)
-scene.add(camera)
-# add point light with camera as parent
-# point_light = pyrender.PointLight(color=[1.0, 1.0, 1.0], intensity=1.0)
-# scene.add(point_light, parent_node=scene.main_camera_node)
+            node.mesh.is_visible = True
 
+            # Focus camera on the current mesh
+            camera_poses = focus_camera_on_mesh(scene, node, 2)  # Assuming this is defined elsewhere
 
-# Iterate over each mesh node in the scene and render it
-for node in scene.get_nodes():
-    if isinstance(node, pyrender.Node) and node.mesh is not None:
-        print(mesh_index)
-        # Disable all other mesh nodes
-        for other_node in scene.get_nodes():
-            if other_node.mesh is not None and other_node != node:
-                other_node.mesh.is_visible = False
-                pass
+            pose_index = 0
+            for pose in camera_poses:
+                scene.set_pose(scene.main_camera_node, pose)
+                # Render the scene with the current mesh
+                render_to_image(
+                    scene, filename=f"{output_dir}/rendered_mesh_{mesh_index}_{pose_index}.png"
+                )
+                pose_index += 1
 
-        node.mesh.is_visible = True
+            mesh_index += 1                
 
-        # Focus camera on the current mesh
-        camera_poses = focus_camera_on_mesh(scene, node, 2)
-
-        pose_index = 0
-        for pose in camera_poses:
-            scene.set_pose(scene.main_camera_node, pose)
-            # Render the scene with the current mesh
-            render_to_image(
-                scene, filename=f"./render/rendered_mesh_{mesh_index}_{pose_index}.png"
-            )
-            pose_index += 1
-
-        # Increment the  index for the next mesh
-        mesh_index += 1
+# Usage
+render_meshes_from_scene("./cafeteria.glb", "./render")
