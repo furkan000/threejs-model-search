@@ -1,4 +1,4 @@
-from image_classifier import load_image_classifier
+from classifier.classifier import load_image_classifier
 from PIL import Image
 
 # Load the image classifier function
