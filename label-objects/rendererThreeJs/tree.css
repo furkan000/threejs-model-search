@@ -17,6 +17,30 @@
     max-height: 100%; /* Ensures the container doesn't exceed the height of the parent */
 }
 
+#downloadButtonConatiner {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000; /* ensures the button stays above other elements */
+}
+
+#downloadButton {
+    padding: 10px 15px;
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for a bit of depth */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+}
+
+#downloadButton:hover {
+    background-color: #45a049; /* Darker shade of green on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Slightly larger shadow on hover */
+}
+
 /* ------------------------------- */
 
 ul, #myUL {

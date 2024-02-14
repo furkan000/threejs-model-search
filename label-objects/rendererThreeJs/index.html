@@ -39,7 +39,19 @@
 			</li>
 		</ul>
 	</div>
-	<script type="module" src="/main.js"></script>
+	<div id="downloadButtonConatiner">
+		<button id="downloadButton" onclick="downloadGLB()">Download .glb</button>
+	</div>
+
+    <script type="module">
+        import { downloadGLB } from './main.js';
+
+        // Make the function available for your HTML
+        window.downloadGLB = downloadGLB;
+    </script>
+
+
+
 	<script>
 		var toggler = document.getElementsByClassName("caret");
 		var i;
