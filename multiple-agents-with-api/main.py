@@ -52,11 +52,14 @@ def chat():
         # Save the assistant's response to the chat history
         chat_histories[chatname].append({"role": "assistant", "content": assistant_message})
 
-        return jsonify({"response": assistant_message})
+        # return jsonify({"response": assistant_message})
+        return assistant_message
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
+    print("Example:")
+    print("""curl -X POST http://127.0.0.1:5000/chat -H "Content-Type: application/json" -d '{"chatname": "example_chat", "message": "Hello"}'""")
     app.run(debug=True)
 
 # USAGE:
