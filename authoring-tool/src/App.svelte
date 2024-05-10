@@ -1,54 +1,17 @@
 <script>
-  import { onMount } from "svelte";
-  import { run } from "./scene";
-  let el;
-  onMount(() => {
-    run(el);
-  });
+  import MainView from "./lib/MainView.svelte";
+  import Sidebar from "./lib/Sidebar.svelte";
+
+  let tree = {
+    label: "USA",
+    children: [
+      { label: "Florida", children: [{ label: "Jacksonville" }, { label: "Orlando", children: [{ label: "Disney World" }, { label: "Universal Studio" }, { label: "Sea World" }] }, { label: "Miami" }] },
+      { label: "California", children: [{ label: "San Francisco" }, { label: "Los Angeles" }, { label: "Sacramento" }] },
+    ],
+  };
 </script>
 
-<body>
-  <div class="frame">
-    <div id="editor">explaintion of example on left or the code for it would go here</div>
-    <div id="result">
-      <canvas style="display: block"></canvas>
-    </div>
-  </div>
-</body>
-
-<style>
-  html {
-    box-sizing: border-box;
-  }
-  *,
-  k *:before,
-  *:after {
-    box-sizing: inherit;
-  }
-  body {
-    margin: 0;
-  }
-  .outer {
-  }
-  .frame {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-  }
-  .frame > * {
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-basis: 50%;
-  }
-  #editor {
-    max-width: 300px;
-    /* font-family: monospace; */
-    padding: 0.5em;
-    background: #444;
-    color: white;
-  }
-  canvas {
-    width: 100%;
-    height: 100%;
-  }
-</style>
+<!-- <MainView /> -->
+<ul class="menu menu-xs bg-base-200 rounded-lg max-w-xs w-full">
+  <Sidebar {tree} />
+</ul>
