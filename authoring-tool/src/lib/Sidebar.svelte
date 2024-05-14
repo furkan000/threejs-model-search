@@ -4,50 +4,57 @@
   import PencilSquareIcon from "./Icons/PencilSquareIcon.svelte";
 
   export let tree;
-  // const { label, children } = tree;
 
-  let editable = false;
-  let editedLabel = tree.label;
-  let expanded = false; // Simplified expanded logic for the example
+  let isEditing = false;
+  let label = tree.label;
   let inputElement;
+  let isEditCompleteHandled = false;
 
-  const toggleEdit = (event) => {
-    event.preventDefault();
-    editable = !editable;
-    if (editable) {
+  function startEditing() {
+    isEditing = true;
+    isEditCompleteHandled = false;
+    $: if (isEditing) {
       setTimeout(() => {
         inputElement.focus();
-      }, 0); // Focus after the DOM updates
-    } else {
-      // Optionally update the tree label here if needed
+        inputElement.select();
+      }, 0);
     }
-  };
+  }
 
-  const handleKeyDown = (event) => {
-    // Pressing Enter saves the edit
+  function stopEditing() {
+    if (isEditCompleteHandled) return;
+    isEditCompleteHandled = true;
+    isEditing = false;
+    onEditComplete();
+  }
+
+  function handleBlur() {
+    stopEditing();
+  }
+
+  function handleKeyDown(event) {
     if (event.key === "Enter") {
-      toggleEdit();
+      stopEditing();
     }
-  };
+  }
 
-  const handleDoubleClick = () => {
-    if (!editable) {
-      toggleEdit();
-    }
-  };
+  function onEditComplete() {
+    console.log("Editing completed:", label);
+    // Add any additional logic you want to handle when editing is done
+  }
 </script>
 
 <li>
   {#if tree.children}
     <details open>
-      <summary on:dblclick={handleDoubleClick}>
+      <summary>
         <FolderIcon />
-        {#if editable}
-          <input type="text" bind:this={inputElement} bind:value={editedLabel} on:keydown={handleKeyDown} on:blur={toggleEdit} />
+        {#if isEditing}
+          <input bind:this={inputElement} bind:value={label} on:blur={handleBlur} on:keydown={handleKeyDown} />
         {:else}
-          {tree.label}
+          <span on:dblclick={startEditing}>{label}</span>
         {/if}
-        <span class="clickable" on:click={toggleEdit}>
+        <span class="clickable" on:click={startEditing}>
           <PencilSquareIcon />
         </span>
       </summary>
@@ -58,16 +65,22 @@
       </ul>
     </details>
   {:else}
-    <a on:dblclick={handleDoubleClick}>
+    <a>
       <FileIcon />
-      {#if editable}
-        <input type="text" bind:this={inputElement} bind:value={editedLabel} on:keydown={handleKeyDown} on:blur={toggleEdit} />
+      {#if isEditing}
+        <input bind:this={inputElement} bind:value={label} on:blur={handleBlur} on:keydown={handleKeyDown} />
       {:else}
-        {tree.label}
+        <span on:dblclick={startEditing}>{label}</span>
       {/if}
-      <span class="clickable pr-4" on:click={toggleEdit}>
+      <span class="clickable pr-4" on:click={startEditing}>
         <PencilSquareIcon />
       </span>
     </a>
   {/if}
 </li>
+
+<style>
+  .clickable {
+    cursor: pointer;
+  }
+</style>
