@@ -4,10 +4,10 @@
   import PencilSquareIcon from "./Icons/PencilSquareIcon.svelte";
 
   export let tree;
-  const { label, children } = tree;
+  // const { label, children } = tree;
 
   let editable = false;
-  let editedLabel = label;
+  let editedLabel = tree.label;
   let expanded = false; // Simplified expanded logic for the example
   let inputElement;
 
@@ -21,10 +21,6 @@
     } else {
       // Optionally update the tree label here if needed
     }
-  };
-
-  const handleInput = (event) => {
-    editedLabel = event.target.value;
   };
 
   const handleKeyDown = (event) => {
@@ -42,21 +38,21 @@
 </script>
 
 <li>
-  {#if children}
+  {#if tree.children}
     <details open>
       <summary on:dblclick={handleDoubleClick}>
         <FolderIcon />
         {#if editable}
           <input type="text" bind:this={inputElement} bind:value={editedLabel} on:keydown={handleKeyDown} on:blur={toggleEdit} />
         {:else}
-          {label}
+          {tree.label}
         {/if}
         <span class="clickable" on:click={toggleEdit}>
           <PencilSquareIcon />
         </span>
       </summary>
       <ul>
-        {#each children as child}
+        {#each tree.children as child}
           <svelte:self tree={child} />
         {/each}
       </ul>
@@ -67,7 +63,7 @@
       {#if editable}
         <input type="text" bind:this={inputElement} bind:value={editedLabel} on:keydown={handleKeyDown} on:blur={toggleEdit} />
       {:else}
-        {label}
+        {tree.label}
       {/if}
       <span class="clickable pr-4" on:click={toggleEdit}>
         <PencilSquareIcon />

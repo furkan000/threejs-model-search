@@ -5,6 +5,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 
+import { tree } from "./store.js";
+
 export function run() {
   const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("canvas"), antialias: true });
   const loader = new GLTFLoader();
@@ -12,7 +14,7 @@ export function run() {
   // There's no reason to set the aspect here because we're going
   // to set it every frame anyway so we'll set it to 2 since 2
   // is the the aspect for the canvas default size (300w/150h = 2)
-  const camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
+  const camera = new THREE.PerspectiveCamera(50, 1, 1, 2000);
   camera.position.z = 400;
 
   const scene = new THREE.Scene();
@@ -34,6 +36,10 @@ export function run() {
       // wait until the model can be added to the scene without blocking due to shader compilation
       await renderer.compileAsync(model, camera, scene);
       scene.add(model);
+
+      console.log(getSimplifiedJson(model));
+      // objectTree = getSimplifiedJson(model);
+      tree.set(getSimplifiedJson(model));
 
       render();
     });
@@ -73,4 +79,40 @@ export function run() {
   }
 
   requestAnimationFrame(render);
+
+  function getSimplifiedJson(o) {
+    // Return undefined if the object is null or its type is "Mesh"
+    if (o == null || o.type == "Mesh") return undefined;
+
+    let meshName = undefined;
+    let children = undefined;
+
+    // If the object has exactly one child of type "Mesh", assign its name to meshName
+    if (o.children != null && o.children.length == 1 && o.children[0].type == "Mesh") {
+      meshName = o.children[0].name;
+    }
+
+    // If the object has children, map them to their simplified JSON representations
+    if (o.children != null && o.children.length > 0) {
+      children = o.children.map((c) => getSimplifiedJson(c));
+    }
+
+    // Remove all null values from the children array
+    if (children != null) {
+      children = children.filter((c) => c != null);
+    }
+
+    // If children array is empty, set it to undefined
+    if (children != null && children.length == 0) {
+      children = undefined;
+    }
+
+    // Return the simplified JSON object with id, label, meshName, and children properties
+    return {
+      id: o.id, // Add the object id
+      label: o.name,
+      meshName: meshName,
+      children: children,
+    };
+  }
 }

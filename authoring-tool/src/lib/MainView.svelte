@@ -1,15 +1,34 @@
 <script>
   import { onMount } from "svelte";
-  import { run } from "../scene";
-  let el;
+  import { run } from "./scene";
+  import Sidebar from "./Sidebar.svelte";
+  import { tree } from "./store";
+
   onMount(() => {
-    run(el);
+    run();
   });
+
+  let tree_value;
+
+  tree.subscribe((value) => {
+    tree_value = value;
+  });
+
+  function test() {
+    console.log(tree_value);
+  }
 </script>
+
+<!-- button that triggers functino -->
+<!-- <button on:click={test}>Run</button> -->
 
 <body>
   <div class="frame">
-    <div id="editor">explaintion of example on left or the code for it would go here</div>
+    <div id="editor">
+      <ul class="menu menu-xs rounded-lg max-w-xs w-full">
+        <Sidebar bind:tree={tree_value} />
+      </ul>
+    </div>
     <div id="result">
       <canvas style="display: block"></canvas>
     </div>
@@ -17,6 +36,15 @@
 </body>
 
 <style>
+  #editor {
+    overflow: auto;
+    max-width: 400px;
+    /* font-family: monospace; */
+    /* padding: 0.5em; */
+    /* background: #444; */
+    /* color: white; */
+  }
+
   html {
     box-sizing: border-box;
   }
@@ -40,13 +68,7 @@
     flex-shrink: 1;
     flex-basis: 50%;
   }
-  #editor {
-    max-width: 300px;
-    /* font-family: monospace; */
-    padding: 0.5em;
-    background: #444;
-    /* color: white; */
-  }
+
   canvas {
     width: 100%;
     height: 100%;
