@@ -3,67 +3,87 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
-import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
-
 import { tree } from "./store.js";
 
 export let model;
+let composer, effectFXAA, outlinePass;
+let renderer, camera, scene, controls;
 
 export function run() {
-  const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("canvas"), antialias: true });
-  const loader = new GLTFLoader();
+  initRenderer();
+  initCamera();
+  initScene();
+  initLight();
+  loadEnvironment();
+  initControls();
 
-  const camera = new THREE.PerspectiveCamera(50, 1, 1, 2000);
+  requestAnimationFrame(render);
+}
+
+function initRenderer() {
+  renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("canvas"), antialias: true });
+}
+
+function initCamera() {
+  camera = new THREE.PerspectiveCamera(50, 1, 1, 2000);
   camera.position.z = 400;
+}
 
-  const scene = new THREE.Scene();
+function initScene() {
+  scene = new THREE.Scene();
+}
 
+function initLight() {
   const light1 = new THREE.PointLight(0xff80c0, 2, 0);
   light1.position.set(200, 100, 300);
   scene.add(light1);
+}
 
+function loadEnvironment() {
   new RGBELoader().setPath("./textures/").load("autumn_field_puresky_4k.hdr", function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     scene.background = texture;
     scene.environment = texture;
     render();
 
-    const loader = new GLTFLoader().setPath("./models/");
-    loader.load("cafeteria.glb", async function (gltf) {
-      model = gltf.scene;
-      await renderer.compileAsync(model, camera, scene);
-      scene.add(model);
-
-      updateTreeObject();
-
-      render();
-    });
+    loadModel();
   });
+}
 
-  const controls = new OrbitControls(camera, renderer.domElement);
+function loadModel() {
+  const loader = new GLTFLoader().setPath("./models/");
+  loader.load("cafeteria.glb", async function (gltf) {
+    model = gltf.scene;
+    await renderer.compileAsync(model, camera, scene);
+    scene.add(model);
+    updateTreeObject();
+    render();
+  });
+}
+
+function initControls() {
+  controls = new OrbitControls(camera, renderer.domElement);
   controls.addEventListener("change", render);
   controls.minDistance = 2;
   controls.maxDistance = 10;
   controls.target.set(0, 0, -0.2);
   controls.update();
+}
 
-  function resizeCanvasToDisplaySize() {
-    const canvas = renderer.domElement;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    if (canvas.width !== width || canvas.height !== height) {
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    }
+function resizeCanvasToDisplaySize() {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (canvas.width !== width || canvas.height !== height) {
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
   }
+}
 
-  function render() {
-    resizeCanvasToDisplaySize();
-    renderer.render(scene, camera);
-  }
-
-  requestAnimationFrame(render);
+function render() {
+  resizeCanvasToDisplaySize();
+  renderer.render(scene, camera);
 }
 
 export function updateTreeObject() {
@@ -104,8 +124,6 @@ export function getSimplifiedJson(o) {
 export function highlightObjectById(id) {
   const object = findObjectById(model, id);
 
-  
-
   if (object) {
     console.log(`Object with ID ${id} found`);
     console.log(object);
@@ -115,7 +133,6 @@ export function highlightObjectById(id) {
 }
 
 export function findObjectById(object, id) {
-  // console.log(object.id);
   if (object.id == id) {
     return object;
   }
