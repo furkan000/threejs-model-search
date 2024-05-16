@@ -12,7 +12,12 @@
   $: node && Object.keys(node).length && updateTreeObject();
 
   onMount(() => {
-    run();
+    // Delay the initialization to ensure the canvas is correctly sized
+    requestAnimationFrame(() => {
+      run();
+      // Trigger a resize event to ensure correct initial sizing
+      window.dispatchEvent(new Event("resize"));
+    });
   });
 
   tree.subscribe((value) => {
@@ -31,14 +36,10 @@
   function applyChanges() {}
 </script>
 
-<!-- button that triggers functino -->
-<!-- <button on:click={test}>Run</button> -->
-
 <body>
   <div class="frame">
     <div id="editor">
       <ul class="menu menu-xs rounded-lg w-full">
-        <!-- <button on:click={test}>Run</button> -->
         <Sidebar bind:tree={tree_value} {renameObjectById} {openModal} {highlightObjectById} />
       </ul>
     </div>
@@ -53,24 +54,20 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="font-bold text-lg">Edit Node</h3>
-      <!-- <p class="py-4">Press ESC key or click the button below to close</p> -->
       <label class="form-control w-full py-4">
         <div class="label">
           <span class="label-text">Node Name</span>
         </div>
         <input bind:value={node.name} type="text" placeholder="Type here" class="input input-bordered w-full" />
       </label>
-
       <label class="form-control">
         <div class="label">
           <span class="label-text">Discription</span>
         </div>
         <textarea bind:value={node.description} class="textarea textarea-bordered h-24" placeholder="Empty"></textarea>
       </label>
-
       <div class="modal-action">
         <form method="dialog">
-          <!-- if there is a button in form, it will close the modal -->
           <button class="btn">Close</button>
         </form>
       </div>
@@ -81,22 +78,17 @@
 <style>
   #editor {
     overflow-y: auto;
-    /* max-width: 400px;     */
     max-width: fit-content;
     min-width: fit-content;
     padding-right: 2em;
-    /* padding-left: 1em; */
     font-family: monospace;
-    /* padding: 0.5em; */
-    /* background: #444; */
-    /* color: white; */
   }
 
   html {
     box-sizing: border-box;
   }
   *,
-  k *:before,
+  *:before,
   *:after {
     box-sizing: inherit;
   }
@@ -122,7 +114,6 @@
   }
 
   #editor {
-    /* --sb-track-color: #d2d2d2; */
     --sb-thumb-color: #cacaca;
     --sb-size: 8px;
   }

@@ -26,7 +26,7 @@ export function run() {
 
   window.addEventListener("resize", onWindowResize, false);
 
-  requestAnimationFrame(render);
+  animate();
 }
 
 function initRenderer() {
@@ -35,7 +35,7 @@ function initRenderer() {
 }
 
 function initCamera() {
-  camera = new THREE.PerspectiveCamera(50, 1, 1, 2000);
+  camera = new THREE.PerspectiveCamera(50, 1, 1, 500);
   camera.position.z = 400;
 }
 
@@ -105,7 +105,7 @@ function initPostProcessing() {
   composer.addPass(effectFXAA);
 }
 
-function resizeCanvasToDisplaySize() {
+export function resizeCanvasToDisplaySize() {
   const canvas = renderer.domElement;
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
@@ -124,8 +124,12 @@ function onWindowResize() {
 }
 
 function render() {
-  resizeCanvasToDisplaySize();
   composer.render(scene, camera);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  render();
 }
 
 export function updateTreeObject() {
@@ -187,18 +191,20 @@ function moveCameraToObject(object) {
 
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
+
+  // Desired percentage of the screen that the object should take up (e.g., 50%)
+  const desiredObjectSize = 0.5;
   const fov = camera.fov * (Math.PI / 180);
 
-  // Adjust camera distance based on the size of the object. Smaller objects will have a closer zoom.
-  const zoomFactor = 5; // Increase this value to zoom in more for smaller objects.
-  const cameraZ = Math.abs((maxDim / 2) * Math.tan(fov * 2)) * zoomFactor;
+  // Distance calculation to fit the object within the desired percentage of the screen
+  const cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2) * desiredObjectSize));
 
-  const minZ = box.min.z;
-  const cameraToTarget = camera.position.z - controls.target.z;
-  const direction = Math.sign(cameraToTarget);
+  // Adjust the camera position to zoom in or out based on object size
+  const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+  camera.position.copy(center).add(direction.multiplyScalar(cameraZ));
 
-  camera.position.z = center.z + direction * cameraZ;
   camera.lookAt(center);
+  controls.update();
 }
 
 export function findObjectById(object, id) {
