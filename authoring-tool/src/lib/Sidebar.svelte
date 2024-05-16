@@ -7,6 +7,7 @@
   export let tree;
   export let renameObjectById;
   export let openModal;
+  export let highlightObjectById;
 
   let isEditing = false;
   let inputElement;
@@ -53,7 +54,7 @@
         {#if isEditing}
           <input bind:this={inputElement} bind:value={tree.label} on:blur={handleBlur} on:keydown={onEditComplete} />
         {:else}
-          <span on:dblclick={startEditing} class="flex-1">{tree.label}</span>
+          <span on:click={highlightObjectById(tree.id)} on:dblclick={startEditing} class="flex-1">{tree.label}</span>
         {/if}
         <span class="clickable" on:click={startEditing}>
           <PencilSquareIcon />
@@ -74,7 +75,7 @@
       {#if isEditing}
         <input bind:this={inputElement} bind:value={tree.label} on:blur={handleBlur} on:keydown={handleKeyDown} />
       {:else}
-        <span on:dblclick={startEditing}>{tree.label}</span>
+        <span on:click={highlightObjectById(tree.id)} on:dblclick={startEditing}>{tree.label}</span>
       {/if}
       <span class="clickable" on:click={startEditing}>
         <PencilSquareIcon />

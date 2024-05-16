@@ -2,11 +2,18 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { tree } from "./store.js";
 
 export let model;
-let composer, effectFXAA, outlinePass;
 let renderer, camera, scene, controls;
+let composer, effectFXAA, outlinePass;
+let canvas;
 
 export function run() {
   initRenderer();
@@ -14,6 +21,7 @@ export function run() {
   initScene();
   initLight();
   loadEnvironment();
+  initPostProcessing();
   initControls();
 
   window.addEventListener("resize", onWindowResize, false);
@@ -22,7 +30,8 @@ export function run() {
 }
 
 function initRenderer() {
-  renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("canvas"), antialias: true });
+  canvas = document.querySelector("canvas");
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 }
 
 function initCamera() {
@@ -66,9 +75,34 @@ function initControls() {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.addEventListener("change", render);
   controls.minDistance = 2;
-  controls.maxDistance = 10;
+  controls.maxDistance = 20;
   controls.target.set(0, 0, -0.2);
   controls.update();
+}
+
+function initPostProcessing() {
+  composer = new EffectComposer(renderer);
+
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  outlinePass = new OutlinePass(new THREE.Vector2(canvas.clientWidth, canvas.clientHeight), scene, camera);
+  composer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+  // Make the highlighting effect more extreme
+  outlinePass.edgeStrength = 10.0; // Default is 3.0
+  outlinePass.edgeGlow = 1.0; // Default is 0.0
+  outlinePass.edgeThickness = 3.0; // Default is 1.0
+  outlinePass.pulsePeriod = 0; // Default is 0
+
+  composer.addPass(outlinePass);
+
+  const outputPass = new OutputPass();
+  composer.addPass(outputPass);
+
+  effectFXAA = new ShaderPass(FXAAShader);
+  effectFXAA.uniforms["resolution"].value.set(1 / canvas.clientWidth, 1 / canvas.clientHeight);
+  composer.addPass(effectFXAA);
 }
 
 function resizeCanvasToDisplaySize() {
@@ -84,12 +118,14 @@ function resizeCanvasToDisplaySize() {
 
 function onWindowResize() {
   resizeCanvasToDisplaySize();
+  composer.setSize(canvas.clientWidth, canvas.clientHeight);
+  effectFXAA.uniforms["resolution"].value.set(1 / canvas.clientWidth, 1 / canvas.clientHeight);
   render();
 }
 
 function render() {
   resizeCanvasToDisplaySize();
-  renderer.render(scene, camera);
+  composer.render(scene, camera);
 }
 
 export function updateTreeObject() {
@@ -129,10 +165,12 @@ export function getSimplifiedJson(o) {
 
 export function highlightObjectById(id) {
   const object = findObjectById(model, id);
+  outlinePass.selectedObjects = [];
 
   if (object) {
-    console.log(`Object with ID ${id} found`);
-    console.log(object);
+    outlinePass.selectedObjects = [object];
+    console.log(`Object with ID ${id} found and highlighted`);
+    render(); // Call render to update the scene immediately
   } else {
     console.log(`Object with ID ${id} not found`);
   }

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { run, helloWorld, renameObjectById, findObjectById, model, updateTreeObject } from "./scene";
+  import { run, helloWorld, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById } from "./scene";
   import Sidebar from "./Sidebar.svelte";
   import { tree } from "./store";
 
@@ -35,6 +35,18 @@
 <!-- <button on:click={test}>Run</button> -->
 
 <body>
+  <div class="frame">
+    <div id="editor">
+      <ul class="menu menu-xs rounded-lg w-full">
+        <!-- <button on:click={test}>Run</button> -->
+        <Sidebar bind:tree={tree_value} {renameObjectById} {openModal} {highlightObjectById} />
+      </ul>
+    </div>
+    <div id="result">
+      <canvas style="display: block"></canvas>
+    </div>
+  </div>
+
   <dialog id="modal" class="modal">
     <div class="modal-box">
       <form method="dialog">
@@ -64,18 +76,6 @@
       </div>
     </div>
   </dialog>
-
-  <div class="frame">
-    <div id="editor">
-      <ul class="menu menu-xs rounded-lg w-full">
-        <!-- <button on:click={test}>Run</button> -->
-        <Sidebar bind:tree={tree_value} {renameObjectById} {openModal} />
-      </ul>
-    </div>
-    <div id="result">
-      <canvas style="display: block"></canvas>
-    </div>
-  </div>
 </body>
 
 <style>
