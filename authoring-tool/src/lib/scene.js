@@ -1,5 +1,4 @@
 import * as THREE from "three";
-
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
@@ -16,6 +15,8 @@ export function run() {
   initLight();
   loadEnvironment();
   initControls();
+
+  window.addEventListener("resize", onWindowResize, false);
 
   requestAnimationFrame(render);
 }
@@ -79,6 +80,11 @@ function resizeCanvasToDisplaySize() {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   }
+}
+
+function onWindowResize() {
+  resizeCanvasToDisplaySize();
+  render();
 }
 
 function render() {
