@@ -1,17 +1,20 @@
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 export default {
   // Consult https://svelte.dev/docs#compile-time-svelte-preprocess
   // for more information about preprocessors
   preprocess: vitePreprocess(),
 
-  config: {
-    onwarn: (warning, handler) => {
-      // suppress warnings on `vite dev` and `vite build`; but even without this, things still work
-      if (warning.code === "a11y-click-events-have-key-events") return;
-      if (warning.code === "a11y-no-static-element-interactions") return;
-      handler(warning);
-    },
-    kit: { adapter: adapter() },
-  },
+  plugins: [
+    svelte({
+      onwarn(warning, defaultHandler) {
+        // don't warn on <marquee> elements, cos they're cool
+        if (warning.code.includes("A11y")) return;
+
+        // handle all other warnings normally
+        defaultHandler(warning);
+      },
+    }),
+  ],
 };

@@ -17,8 +17,7 @@ import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 
 var l = function () {
   console.log.apply(console, arguments);
-}
-
+};
 
 let container, stats;
 let camera, scene, renderer, controls;
@@ -28,11 +27,7 @@ let mixer;
 
 let clips;
 
-
-
 let hideGui = false;
-
-
 
 // Highlight & GUI
 
@@ -44,7 +39,6 @@ const obj3d = new THREE.Object3D();
 const group = new THREE.Group();
 const loader = new GLTFLoader();
 
-
 const params = {
   edgeStrength: 10.0,
   edgeGlow: 0.245,
@@ -53,9 +47,8 @@ const params = {
   rotate: false,
   usePatternTexture: false,
   search: "",
-  testFunction: testFunction
+  testFunction: testFunction,
 };
-
 
 // wait one second
 setTimeout(function () {
@@ -67,7 +60,6 @@ setTimeout(function () {
   outlinePass.hiddenEdgeColor.set("#190a05");
 }, 1000);
 
-
 // Init gui
 
 const gui = new GUI({ width: 280 });
@@ -75,10 +67,6 @@ const gui = new GUI({ width: 280 });
 if (hideGui) {
   gui.hide();
 }
-
-
-
-
 
 gui.add(params, "edgeStrength", 0.01, 10).onChange(function (value) {
   outlinePass.edgeStrength = Number(value);
@@ -104,7 +92,7 @@ gui.add(params, "usePatternTexture").onChange(function (value) {
 
 gui.add(params, "search").onChange(findObject);
 
-gui.add(params, 'testFunction');
+gui.add(params, "testFunction");
 
 function Configuration() {
   this.visibleEdgeColor = "#ffffff";
@@ -125,15 +113,8 @@ gui.addColor(conf, "hiddenEdgeColor").onChange(function (value) {
   outlinePass.hiddenEdgeColor.set(value);
 });
 
-
-
-
-
-
 init();
 animate();
-
-
 
 function loadGLTFModel(path) {
   loader.load(path, async function (gltf) {
@@ -145,14 +126,9 @@ function loadGLTFModel(path) {
     // wait until the model can be added to the scene without blocking due to shader compilation
     renderer.compile(model, camera, scene);
 
-
-
-
     scene.add(model);
     mixer = new THREE.AnimationMixer(model);
     clips = gltf.animations;
-
-
 
     console.log(gltf.animations);
     // gltf.animations; // Array<THREE.AnimationClip>
@@ -166,7 +142,6 @@ function loadGLTFModel(path) {
     render();
   });
 }
-
 
 function init() {
   const container = document.createElement("div");
@@ -194,8 +169,6 @@ function init() {
   controls.dampingFactor = 0.05;
   controls.update();
 
-
-
   new RGBELoader().setPath("textures/").load("autoshop_01_4k.hdr", function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -207,18 +180,11 @@ function init() {
     // model
   });
 
-
-
-
-
   // loadGLTFModel("models/Engine/scene.gltf");
   // loadGLTFModel("models/DamagedHelmet/DamagedHelmet.gltf");
-  loadGLTFModel("models/downloaded/b16d287497b24d8b9e2b94baf7f6b3e2.glb")
-
+  loadGLTFModel("models/downloaded/b16d287497b24d8b9e2b94baf7f6b3e2.glb");
 
   // const loader = new GLTFLoader().setPath("models/");
-
-
 
   window.addEventListener("resize", onWindowResize);
 
@@ -383,20 +349,17 @@ function findObject(searchString) {
   // console.log(selectedObjects);
 }
 
-
-
-
 // ############ INTERFACE ############
 
 // TODO: fix
 function highlight(searchTerms) {
-  const searchStringLower = searchTerms.map(term => term.toLowerCase());
+  const searchStringLower = searchTerms.map((term) => term.toLowerCase());
   selectedObjects = [];
 
   scene.traverse(function (object) {
     if (object.isMesh == true) {
       const objectNameLower = object.name.toLowerCase();
-      if (searchStringLower.some(term => objectNameLower.includes(term))) {
+      if (searchStringLower.some((term) => objectNameLower.includes(term))) {
         selectedObjects.push(object);
       }
     }
@@ -420,7 +383,7 @@ function recolor(objectNames, color) {
           child.material = newMaterial;
           // If the object has multiple materials
           if (Array.isArray(child.material)) {
-            child.material = child.material.map(material => {
+            child.material = child.material.map((material) => {
               const newMaterial = material.clone();
               newMaterial.color.set(color);
               return newMaterial;
@@ -467,8 +430,8 @@ function hide(objectNames) {
 }
 
 function playAnimations(clipNames) {
-  clipNames.forEach(clipName => {
-    let selectedClip = clips.find(clip => clip.name === clipName);
+  clipNames.forEach((clipName) => {
+    let selectedClip = clips.find((clip) => clip.name === clipName);
     if (selectedClip) {
       const action = mixer.clipAction(selectedClip);
       action.clampWhenFinished = true;
@@ -480,10 +443,7 @@ function playAnimations(clipNames) {
   // clips.forEach(function (clip) {
   //   mixer.clipAction(clip).play();
   // });
-
 }
-
-
 
 let functionInterface = {
   highlight: highlight,
@@ -493,19 +453,18 @@ let functionInterface = {
   move: move,
   hide: hide,
   playAnimations: playAnimations,
-  playAnimation: playAnimation
-}
-
+  playAnimation: playAnimation,
+};
 
 // ########## CHAT FUNCTIONALITY ##########
-let chatInput = document.getElementById('chat-input');
+let chatInput = document.getElementById("chat-input");
 
-chatInput.addEventListener('keydown', function (event) {
-  if (event.key === 'Enter') {
+chatInput.addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
     // console.log("enter")
     sendMessage(chatInput.value); // Replace with the function you want to trigger
     event.preventDefault(); // Prevent the Enter key from creating a new line
-    chatInput.value = ''; // Clear the input field
+    chatInput.value = ""; // Clear the input field
   }
 });
 
@@ -513,20 +472,11 @@ function sendMessage(message) {
   if (message.startsWith("download ")) {
     // remove download from message at the beginning
     message = message.substring(9);
-    makeRequest("http://localhost:5001/", message)
-      .then(handleDownloadResponse)
-      .catch(handleError);
+    makeRequest("http://localhost:5001/", message).then(handleDownloadResponse).catch(handleError);
   } else {
-    makeRequest("http://localhost:5000/", message)
-      .then(handleChatResponse)
-      .catch(handleError);
+    makeRequest("http://localhost:5000/", message).then(handleChatResponse).catch(handleError);
   }
-
 }
-
-
-
-
 
 function makeRequest(url, data) {
   showToast("Processing...");
@@ -534,12 +484,12 @@ function makeRequest(url, data) {
   return fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "text/plain"
+      "Content-Type": "text/plain",
     },
-    body: data
-  }).then(response => {
+    body: data,
+  }).then((response) => {
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error("Network response was not ok");
     }
     // console.log(response);
     return response.text();
@@ -547,7 +497,7 @@ function makeRequest(url, data) {
 }
 
 function handleError(e) {
-  console.log(e)
+  console.log(e);
 }
 
 function handleChatResponse(res) {
@@ -555,44 +505,42 @@ function handleChatResponse(res) {
   executeFunctionCalls(res);
 }
 
-
 function handleDownloadResponse(res) {
   let location = "models/downloaded/" + res;
-  loadGLTFModel(location)
+  loadGLTFModel(location);
 }
-
 
 // ########## PARSE RESPONSE ##########
 
 function executeFunctionCalls(response) {
   console.log(response);
 
-  let lines = response.split('\n');
+  let lines = response.split("\n");
   //trim whitespace at beginning and end of each line
-  lines = lines.map(line => line.trim());
+  lines = lines.map((line) => line.trim());
   // remove empty lines
-  lines = lines.filter(line => line != '');
+  lines = lines.filter((line) => line != "");
 
   for (let i = 0; i < lines.length; i++) {
-    showToast(lines[i])
+    showToast(lines[i]);
   }
 
   // remove unnecessary whitespace
-  lines = lines.map(line => removeWhitespace(line));
+  lines = lines.map((line) => removeWhitespace(line));
   // split each line into an array of arguments
-  lines = lines.map(line => splitString(line))
+  lines = lines.map((line) => splitString(line));
   // convert arguments to correct types
 
-  l(lines)
+  l(lines);
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    lines[i] = line.map(arg => {
-      if (arg.startsWith('[')) {
-        console.log(arg)
+    lines[i] = line.map((arg) => {
+      if (arg.startsWith("[")) {
+        console.log(arg);
         arg = arg.toString().replace(/'/g, '"');
         arg = JSON.parse(arg);
-      } else if (arg.startsWith('0x')) {
+      } else if (arg.startsWith("0x")) {
         arg = parseInt(arg);
       } else if (isNumeric(arg)) {
         arg = parseFloat(arg);
@@ -615,18 +563,18 @@ function executeFunctionCalls(response) {
 function removeWhitespace(str) {
   let insideBrackets = false;
   let insideQuotes = false;
-  let quoteChar = '';
-  let result = '';
+  let quoteChar = "";
+  let result = "";
 
   for (let i = 0; i < str.length; i++) {
     const char = str[i];
 
     // Toggle insideBrackets flag when encountering [ or ]
-    if (char === '[' && !insideQuotes) {
+    if (char === "[" && !insideQuotes) {
       insideBrackets = true;
       result += char;
       continue;
-    } else if (char === ']' && !insideQuotes) {
+    } else if (char === "]" && !insideQuotes) {
       insideBrackets = false;
       result += char;
       continue;
@@ -635,11 +583,11 @@ function removeWhitespace(str) {
     // Toggle insideQuotes flag when encountering ' or " if not already inside a different quote
     if ((char === "'" || char === '"') && (!insideQuotes || quoteChar === char)) {
       insideQuotes = !insideQuotes;
-      quoteChar = insideQuotes ? char : '';
+      quoteChar = insideQuotes ? char : "";
     }
 
     // If inside brackets but not inside quotes, skip whitespace characters
-    if (insideBrackets && !insideQuotes && char === ' ') {
+    if (insideBrackets && !insideQuotes && char === " ") {
       continue;
     }
 
@@ -650,9 +598,11 @@ function removeWhitespace(str) {
 }
 
 function isNumeric(str) {
-  if (typeof str != "string") return false // we only process strings!  
-  return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-    !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+  if (typeof str != "string") return false; // we only process strings!
+  return (
+    !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+    !isNaN(parseFloat(str))
+  ); // ...and ensure strings of whitespace fail
 }
 
 function splitString(str) {
@@ -664,7 +614,7 @@ function splitString(str) {
   // Check if matches were found
   if (matches) {
     // Process each match
-    return matches.map(match => {
+    return matches.map((match) => {
       // Remove leading and trailing spaces
       return match.trim();
     });
@@ -674,12 +624,9 @@ function splitString(str) {
   }
 }
 
-
 setTimeout(function () {
   testFunction();
 }, 1000);
-
-
 
 function findObjectByName(name) {
   let found = null;
@@ -691,26 +638,15 @@ function findObjectByName(name) {
   return found;
 }
 
-
-
 function testFunction() {
-
-
-
-
   // let obj = findObjectByName("cylinderHeadRight");
-
   // mixer = new THREE.AnimationMixer(obj);
   // let action = mixer.clipAction(clips[0])
   // action.clampWhenFinished = true;
   // action.setLoop(THREE.LoopOnce);
   // action.play();
-
   // console.log(obj);
-
   // playAnimation(['piston001', 'piston002', 'piston003', 'piston004', 'piston005', 'piston006', 'piston007', 'piston008']);
-
-
   // let response = `rotate ['cylinderHeadRight','cylinderHeadLeft','cylinderHeadCoverRight','cylinderHeadCoverleft'] 0 0 180
   // highlight ['cylinderHeadRight','cylinderHeadLeft','cylinderHeadCoverRight','cylinderHeadCoverleft']`;
   // let response = `
@@ -718,11 +654,10 @@ function testFunction() {
   // executeFunctionCalls(response);
 }
 
-
 // let mixer; // Declare the mixer outside the function so it can be accessed globally
 
 function playAnimation(objectNames) {
-  objectNames.forEach(objectName => {
+  objectNames.forEach((objectName) => {
     let obj = findObjectByName(objectName);
     if (obj) {
       let action = mixer.clipAction(clips[0], obj); // Use the object as the second argument
@@ -732,8 +667,6 @@ function playAnimation(objectNames) {
     }
   });
 }
-
-
 
 // clips.forEach(function (clip) {
 //   mixer.clipAction(clip).play();

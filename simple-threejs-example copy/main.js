@@ -1,48 +1,63 @@
 import * as THREE from "three";
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("canvas") });
-
-// There's no reason to set the aspect here because we're going
-// to set it every frame anyway so we'll set it to 2 since 2
-// is the the aspect for the canvas default size (300w/150h = 2)
-const camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
-camera.position.z = 400;
+let composer, effectFXAA, outlinePass;
 
 const scene = new THREE.Scene();
-const geometry = new THREE.BoxGeometry(200, 200, 200);
-const material = new THREE.MeshToonMaterial({ color: 0x44aa88 });
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-const mesh = new THREE.Mesh(geometry);
-scene.add(mesh);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-const light1 = new THREE.PointLight(0xff80c0, 2, 0);
-light1.position.set(200, 100, 300);
-scene.add(light1);
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0x0055ff });
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-function resizeCanvasToDisplaySize() {
-  const canvas = renderer.domElement;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  if (canvas.width !== width || canvas.height !== height) {
-    // you must pass false here or three.js sadly fights the browser
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+camera.position.z = 5;
 
-    // set render target sizes here
-  }
-}
+// -----------------
 
-function animate(time) {
-  time *= 0.0005; // seconds
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 
-  resizeCanvasToDisplaySize();
+composer = new EffectComposer(renderer);
 
-  mesh.rotation.x = time * 0.5;
-  mesh.rotation.y = time * 1;
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
 
-  renderer.render(scene, camera);
+outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+composer.addPass(outlinePass);
+
+// const textureLoader = new THREE.TextureLoader();
+// textureLoader.load("textures/tri_pattern.jpg", function (texture) {
+//   outlinePass.patternTexture = texture;
+//   texture.wrapS = THREE.RepeatWrapping;
+//   texture.wrapT = THREE.RepeatWrapping;
+// });
+
+const outputPass = new OutputPass();
+composer.addPass(outputPass);
+
+effectFXAA = new ShaderPass(FXAAShader);
+effectFXAA.uniforms["resolution"].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+composer.addPass(effectFXAA);
+
+outlinePass.selectedObjects = [scene];
+
+function animate() {
   requestAnimationFrame(animate);
+
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+
+  composer.render();
+
+  // renderer.render(scene, camera);
 }
 
-requestAnimationFrame(animate);
+animate();
