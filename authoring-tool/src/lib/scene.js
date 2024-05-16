@@ -10,10 +10,21 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { tree } from "./store.js";
 
+let externalFunction;
+export function importExternalFunction(fn) {
+  externalFunction = fn;
+}
+
 export let model;
 let renderer, camera, scene, controls;
 let composer, effectFXAA, outlinePass;
 let canvas;
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let highlightedObject = null;
+let isMouseDown = false;
+let initialMouseDownPosition = new THREE.Vector2();
 
 export function run() {
   initRenderer();
@@ -25,6 +36,13 @@ export function run() {
   initControls();
 
   window.addEventListener("resize", onWindowResize, false);
+  canvas.addEventListener("mousemove", onMouseMove, false);
+
+  // Add event listeners for differentiating between click and drag
+  canvas.addEventListener("mousedown", onMouseDown, false);
+  canvas.addEventListener("mouseup", onMouseUp, false);
+  canvas.addEventListener("mousemove", onMouseMove, false);
+  canvas.addEventListener("dblclick", onMouseDblClick, false); // Add double-click event listener
 
   animate();
 }
@@ -232,7 +250,60 @@ export function renameObjectById(id, newLabel) {
   }
 }
 
-export function helloWorld() {
-  console.log(model);
-  console.log("Hello, World!");
+function onMouseDown(event) {
+  isMouseDown = true;
+  initialMouseDownPosition.set(event.clientX, event.clientY);
+}
+
+function onMouseUp(event) {
+  if (isMouseDown) {
+    const finalMouseUpPosition = new THREE.Vector2(event.clientX, event.clientY);
+    const moveDistance = initialMouseDownPosition.distanceTo(finalMouseUpPosition);
+
+    // Define a threshold for detecting a drag versus a click
+    const clickThreshold = 5; // Adjust as needed
+
+    if (moveDistance < clickThreshold && highlightedObject) {
+      moveCameraToObject(highlightedObject);
+      render(); // Call render to update the scene immediately
+    }
+  }
+  isMouseDown = false;
+}
+
+function onMouseMove(event) {
+  // Convert mouse position to normalized device coordinates
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // Perform raycasting
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  if (intersects.length > 0) {
+    const object = intersects[0].object;
+
+    if (highlightedObject !== object) {
+      highlightedObject = object;
+      outlinePass.selectedObjects = [highlightedObject];
+      render(); // Call render to update the scene immediately
+    }
+  } else {
+    highlightedObject = null;
+    outlinePass.selectedObjects = [];
+    render(); // Call render to update the scene immediately
+  }
+}
+
+function onMouseDblClick(event) {
+  if (highlightedObject) {
+    executeDoubleClickFunction(highlightedObject);
+  }
+}
+
+function executeDoubleClickFunction(object) {
+  // Define the function to be executed on double-click
+  externalFunction(object.id);
+  // Add any additional functionality here
 }

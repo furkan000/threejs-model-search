@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { run, helloWorld, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById } from "./scene";
+  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction } from "./scene";
   import Sidebar from "./Sidebar.svelte";
   import { tree } from "./store";
 
@@ -34,6 +34,11 @@
   }
 
   function applyChanges() {}
+
+  let helloWorld = () => {
+    console.log("Hello World");
+  };
+  importExternalFunction(openModal);
 </script>
 
 <body>

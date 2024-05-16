@@ -49,12 +49,12 @@
 <li>
   {#if tree.children}
     <details open>
-      <summary class="flex">
+      <summary class="flex {tree.description ? 'text-yellow-600' : ''}">
         <FolderIcon />
         {#if isEditing}
           <input bind:this={inputElement} bind:value={tree.label} on:blur={handleBlur} on:keydown={onEditComplete} />
         {:else}
-          <span on:click={highlightObjectById(tree.id)} on:dblclick={startEditing} class="flex-1">{tree.label}</span>
+          <span on:click={highlightObjectById(tree.id)} on:dblclick={startEditing} on:click={(e) => e.preventDefault()} class="flex-1">{tree.label}</span>
         {/if}
         <span class="clickable" on:click={startEditing}>
           <PencilSquareIcon />
@@ -70,7 +70,7 @@
       </ul>
     </details>
   {:else}
-    <a>
+    <a class={tree.description ? "text-yellow-600" : ""}>
       <FileIcon />
       {#if isEditing}
         <input bind:this={inputElement} bind:value={tree.label} on:blur={handleBlur} on:keydown={handleKeyDown} />
