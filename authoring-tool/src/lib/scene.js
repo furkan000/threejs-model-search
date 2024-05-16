@@ -170,10 +170,35 @@ export function highlightObjectById(id) {
   if (object) {
     outlinePass.selectedObjects = [object];
     console.log(`Object with ID ${id} found and highlighted`);
+    moveCameraToObject(object); // Move camera to the selected object
     render(); // Call render to update the scene immediately
   } else {
     console.log(`Object with ID ${id} not found`);
   }
+}
+
+function moveCameraToObject(object) {
+  const box = new THREE.Box3().setFromObject(object);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+
+  controls.target.copy(center);
+  controls.update();
+
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI / 180);
+
+  // Adjust camera distance based on the size of the object. Smaller objects will have a closer zoom.
+  const zoomFactor = 5; // Increase this value to zoom in more for smaller objects.
+  const cameraZ = Math.abs((maxDim / 2) * Math.tan(fov * 2)) * zoomFactor;
+
+  const minZ = box.min.z;
+  const cameraToTarget = camera.position.z - controls.target.z;
+  const direction = Math.sign(cameraToTarget);
+
+  camera.position.z = center.z + direction * cameraZ;
+  camera.lookAt(center);
 }
 
 export function findObjectById(object, id) {
