@@ -9,6 +9,7 @@ import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { tree } from "./store.js";
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 
 let externalFunction;
 export function importExternalFunction(fn) {
@@ -306,4 +307,38 @@ function executeDoubleClickFunction(object) {
   // Define the function to be executed on double-click
   externalFunction(object.id);
   // Add any additional functionality here
+}
+
+export function downloadGLB() {
+  // Specify options to export to GLB
+  const options = {
+    binary: true, // This option is necessary for GLB format
+  };
+
+  new GLTFExporter().parse(
+    scene,
+    function (gltf) {
+      // Create a blob from the GLB data
+      const blob = new Blob([gltf], { type: "model/gltf-binary" });
+
+      // Create a URL for the blob
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element and trigger the download
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = "scene.glb"; // You can name your file here
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    function (error) {
+      console.log("An error happened during the export:", error);
+    },
+    options
+  );
 }

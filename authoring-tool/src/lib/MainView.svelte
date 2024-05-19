@@ -1,8 +1,10 @@
 <script>
   import { onMount } from "svelte";
-  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction } from "./scene";
+  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction, downloadGLB } from "./scene";
   import Sidebar from "./Sidebar.svelte";
   import { tree } from "./store";
+  import DownloadIcon from "./Icons/DownloadIcon.svelte";
+  import CloudUploadIcon from "./Icons/CloudUploadIcon.svelte";
 
   let editNodeLabel;
   let editNodeDescription;
@@ -51,6 +53,17 @@
     <div id="result">
       <canvas style="display: block"></canvas>
     </div>
+  </div>
+
+  <div class="fixed bottom-4 right-4">
+    <button class="btn" on:click={downloadGLB}>
+      <DownloadIcon />
+      Download .glb
+    </button>
+    <button class="btn">
+      <CloudUploadIcon />
+      Load into scene
+    </button>
   </div>
 
   <dialog id="modal" class="modal">
