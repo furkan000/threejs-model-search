@@ -11,17 +11,18 @@
 -->
 
 <main class="flex flex-col h-screen">
-  <header class="flex items-center justify-between bg-gray-900 px-6 py-4 dark:bg-gray-950">
-    <a class="flex items-center gap-3" href="#">
+  <header class="relative flex items-center justify-center bg-gray-900 px-6 py-4 dark:bg-gray-950">
+    <a class="disabled absolute left-6 flex items-center gap-3" href="#">
       <BackIcon />
       <span class="text-xl font-semibold text-gray-50">Back</span>
     </a>
     <h1 class="text-xl font-semibold text-gray-50">Authoring Tool</h1>
     <div class="w-6 h-6"></div>
   </header>
+
   <body class="flex h-full w-full flex-col items-center justify-center gap-16 bg-gray-100 px-6 py-16 dark:bg-gray-950">
     <div class="container mx-auto grid max-w-6xl grid-cols-1 gap-16 md:grid-cols-3">
-      <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="#">
+      <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="http://localhost:5000">
         <div class="flex h-24 w-24 items-center justify-center rounded-full bg-blue-500 text-white group-hover:bg-blue-600">
           <UploadIcon />
         </div>
@@ -51,3 +52,10 @@
     </div>
   </body>
 </main>
+
+<style>
+  .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+</style>

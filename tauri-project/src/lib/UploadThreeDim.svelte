@@ -14,13 +14,13 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-gray-400 transition-colors group-hover:text-gray-50">
         <path d="m12 19-7-7 7-7"></path>
         <path d="M19 12H5"></path>
-      </svg>      
+      </svg>
       <span class="text-xl font-semibold text-gray-50">Back</span>
     </a>
     <h1 class="text-xl font-semibold text-gray-50">Upload Documents</h1>
     <div class="w-6 h-6"></div>
   </header>
-  
+
   <body>
     <div class="container mx-auto px-4 py-8 md:py-12">
       <div class="grid gap-8">
@@ -75,16 +75,16 @@
             </div>
           </div>
           <div id="file-list" class="space-y-4">
-            {% for file in files %}
-            <div id="{{ file }}" class="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+            <!-- {% for file in files %} -->
+            <div id="file" class="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
               <div class="flex items-center space-x-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-gray-500 dark:text-gray-400">
                   <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
                   <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
                 </svg>
-                <p class="text-gray-700 dark:text-gray-300">{{ file }}</p>
+                <p class="text-gray-700 dark:text-gray-300">"file"</p>
               </div>
-              <button onclick="deleteFile('{{ file }}')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground h-10 w-10 text-red-500 hover:bg-red-100 dark:hover:bg-red-900">
+              <button onclick="deleteFile('file')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground h-10 w-10 text-red-500 hover:bg-red-100 dark:hover:bg-red-900">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                   <path d="M3 6h18"></path>
                   <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
@@ -92,8 +92,7 @@
                 </svg>
               </button>
             </div>
-            {% endfor %}
-            </div>
+            <!-- {% endfor %} -->
           </div>
         </div>
       </div>

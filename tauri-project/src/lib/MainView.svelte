@@ -5,6 +5,7 @@
   import { tree } from "./store";
   import DownloadIcon from "./Icons/DownloadIcon.svelte";
   import CloudUploadIcon from "./Icons/CloudUploadIcon.svelte";
+  import BackIcon from "./BackIcon.svelte";
 
   let editNodeLabel;
   let editNodeDescription;
@@ -43,9 +44,19 @@
   importExternalFunction(openModal);
 </script>
 
+<header class="absolute w-full flex items-center justify-center bg-gray-900 px-6 py-2 dark:bg-gray-950 z-10">
+  <a class="disabled absolute left-6 flex items-center gap-3" href="/">
+    <BackIcon />
+    <span class="text-gray-50">Back</span>
+  </a>
+  <h1 class="text-gray-50">Authoring Tool</h1>
+  <div class="w-6 h-6"></div>
+</header>
+
 <body>
   <div class="frame">
     <div id="editor">
+      <div class="p-5"></div>
       <ul class="menu menu-xs rounded-lg w-full">
         <Sidebar bind:tree={tree_value} {renameObjectById} {openModal} {highlightObjectById} />
       </ul>
@@ -97,7 +108,6 @@
   #editor {
     overflow-y: auto;
     max-width: fit-content;
-    min-width: fit-content;
     padding-right: 2em;
     font-family: monospace;
   }
