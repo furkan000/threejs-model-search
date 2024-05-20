@@ -2,8 +2,16 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify, s
 from werkzeug.utils import secure_filename
 from backend import ask_question, update_knowledge_base
 import os
+# cors
+from flask_cors import CORS
+
+
 
 app = Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app)
+
+
 
 # Configuration for file uploads
 app.config['UPLOAD_FOLDER'] = 'files'
@@ -16,7 +24,8 @@ def allowed_file(filename):
 def list_files():
     files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
     files.sort()
-    return render_template('index.html', files=files)
+    # return render_template('index.html', files=files)
+    return jsonify({'files': files})
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
