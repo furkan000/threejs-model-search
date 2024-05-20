@@ -10,6 +10,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { tree } from "./store.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import { invoke } from "@tauri-apps/api/tauri";
 
 let externalFunction;
 export function importExternalFunction(fn) {
@@ -328,16 +329,69 @@ export function downloadGLB() {
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = url;
+      console.log(url);
       a.download = "scene.glb"; // You can name your file here
       document.body.appendChild(a);
       a.click();
 
       // Clean up
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // document.body.removeChild(a);
+      // URL.revokeObjectURL(url);
     },
     function (error) {
       console.log("An error happened during the export:", error);
+    },
+    options
+  );
+}
+
+export async function saveToDirOld() {
+  const path = `C:\\Users\\Furkan\\Desktop\\temp\\file.txt`; // specify your file path
+  const contents = "Hello, world!";
+
+  try {
+    await invoke("write_to_file", { path, contents });
+    console.log("File written successfully");
+  } catch (error) {
+    console.error("Failed to write file", error);
+  }
+}
+
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+
+export async function saveToDir() {
+  // Specify options to export to GLB
+  const options = {
+    binary: true, // This option is necessary for GLB format
+  };
+
+  const exporter = new GLTFExporter();
+
+  exporter.parse(
+    scene,
+    async (gltf) => {
+      try {
+        // Define the file path and name
+        const filePath = `C:/Users/Furkan/Desktop/temp/scene.glb`;
+
+        const blob = new Blob([gltf], { type: "model/gltf-binary" });
+
+        // Convert the glTF data to a Uint8Array
+        const uint8Array = new Uint8Array(gltf);
+
+        // Use Tauri's writeBinaryFile API to save the GLB file to the specified path
+        await writeBinaryFile({
+          path: filePath,
+          contents: uint8Array,
+        });
+
+        console.log("GLB file saved successfully");
+      } catch (error) {
+        console.error("Failed to save GLB file", error);
+      }
+    },
+    (error) => {
+      console.error("An error happened during the export:", error);
     },
     options
   );

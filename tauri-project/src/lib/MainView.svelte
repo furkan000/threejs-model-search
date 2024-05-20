@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction, downloadGLB } from "./scene";
+  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction, downloadGLB, saveToDir } from "./scene";
   import Sidebar from "./Sidebar.svelte";
   import { tree } from "./store";
   import DownloadIcon from "./Icons/DownloadIcon.svelte";
@@ -60,7 +60,7 @@
       <DownloadIcon />
       Download .glb
     </button>
-    <button class="btn">
+    <button class="btn" on:click={saveToDir}>
       <CloudUploadIcon />
       Load into scene
     </button>
