@@ -14,40 +14,47 @@ CORS(app)
 
 
 # Configuration for file uploads
-app.config['UPLOAD_FOLDER'] = 'files'
+app.config['UPLOAD_FOLDER'] = ''
 app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-@app.route('/', methods=['GET'])
-def list_files():
-    files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], f))]
+@app.route('/<folder>/', methods=['GET'])
+def list_files(folder):
+    folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder)
+    if not os.path.exists(folder_path):
+        return jsonify({'message': 'Folder not found'}), 404
+    files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     files.sort()
-    # return render_template('index.html', files=files)
     return jsonify({'files': files})
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
+@app.route('/<folder>/upload', methods=['POST'])
+def upload_file(folder):
+    folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     if 'file' in request.files:
         file = request.files['file']
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(folder_path, filename))
+        
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            # save the uploaded file
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # update the knowledge base with the newly uploaded file
             update_knowledge_base()
             return jsonify({'message': 'File successfully uploaded', 'filename': filename})
     return jsonify({'message': 'Invalid file or no file uploaded'})
 
-@app.route('/delete/<filename>', methods=['POST'])
-def delete_file(filename):
-    try:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        os.remove(file_path)
-        return redirect(url_for('list_files'))
-    except Exception as e:
-        return str(e)
+@app.route('/<folder>/delete/<filename>', methods=['POST'])
+def delete_file(folder, filename):
+    folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder)
+    file_path = os.path.join(folder_path, filename)
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            return redirect(url_for('list_files', folder=folder))
+        except Exception as e:
+            return jsonify({'message': str(e)}), 500
+    return jsonify({'message': 'File not found'}), 404
     
     
 @app.route('/ask', methods=['POST'])
@@ -65,6 +72,16 @@ def last_files():
     files.sort(key=lambda x: os.path.getmtime(os.path.join(app.config['UPLOAD_FOLDER'], x)), reverse=True)
     last_files = files[:10]
     return ', '.join(last_files)
+
+
+@app.route('/<folder>/download/<filename>', methods=['GET'])
+def download_file(folder, filename):
+    folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder)
+    file_path = os.path.join(folder_path, filename)
+    if os.path.exists(file_path):
+        return send_from_directory(folder_path, filename, as_attachment=True)
+    return jsonify({'message': 'File not found'}), 404
+
 
 
 if __name__ == '__main__':

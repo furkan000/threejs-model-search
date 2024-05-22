@@ -1,11 +1,13 @@
 <script>
   import { onMount } from "svelte";
-  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction, downloadGLB, saveToDir } from "./scene";
+  import { run, renameObjectById, findObjectById, model, updateTreeObject, highlightObjectById, importExternalFunction, downloadGLB, saveToDir, replaceModel } from "./scene";
   import Sidebar from "./Sidebar.svelte";
   import { tree } from "./store";
   import DownloadIcon from "./Icons/DownloadIcon.svelte";
   import CloudUploadIcon from "./Icons/CloudUploadIcon.svelte";
   import BackIcon from "./BackIcon.svelte";
+
+  export { replaceModel };
 
   let editNodeLabel;
   let editNodeDescription;
@@ -44,12 +46,14 @@
   importExternalFunction(openModal);
 </script>
 
+<!-- <button on:click={() => replaceModel("./models/duck.glb")}> replace model </button> -->
+
 <header class="absolute w-full flex items-center justify-center bg-gray-900 px-6 py-2 dark:bg-gray-950 z-10">
   <a class="disabled absolute left-6 flex items-center gap-3" href="/">
     <BackIcon />
-    <span class="text-gray-50">Back</span>
+    <span class="text-gray-50 font-semibold">Back</span>
   </a>
-  <h1 class="text-gray-50">Authoring Tool</h1>
+  <h1 class="text-gray-50 font-semibold">Annotate Model</h1>
   <div class="w-6 h-6"></div>
 </header>
 
@@ -67,11 +71,11 @@
   </div>
 
   <div class="fixed bottom-4 right-4">
-    <button class="btn" on:click={downloadGLB}>
+    <button class="btn font-bold" on:click={downloadGLB}>
       <DownloadIcon />
       Download .glb
     </button>
-    <button class="btn" on:click={saveToDir}>
+    <button class="btn font-bold" on:click={saveToDir}>
       <CloudUploadIcon />
       Load into scene
     </button>

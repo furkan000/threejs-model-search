@@ -8,9 +8,12 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
-import { tree } from "./store.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+
+import { tree, modelUrl } from "./store.js";
 import { invoke } from "@tauri-apps/api/tauri";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { get } from "svelte/store";
 
 let externalFunction;
 export function importExternalFunction(fn) {
@@ -29,6 +32,11 @@ let isMouseDown = false;
 let initialMouseDownPosition = new THREE.Vector2();
 
 export function run() {
+  modelUrl.subscribe((value) => {
+    console.log("Model URL changed to", value);
+    replaceModel(value);
+  });
+
   initRenderer();
   initCamera();
   initScene();
@@ -80,15 +88,31 @@ function loadEnvironment() {
   });
 }
 
-function loadModel() {
-  const loader = new GLTFLoader().setPath("./models/");
-  loader.load("cafeteria.glb", async function (gltf) {
+export function replaceModel(url) {
+  // Check if url is a string
+  if (typeof url !== "string") {
+    throw new TypeError("The provided URL must be a string");
+  }
+
+  const loader = new GLTFLoader();
+  loader.load(url, function (gltf) {
+    if (model) {
+      scene.remove(model);
+    }
     model = gltf.scene;
-    await renderer.compileAsync(model, camera, scene);
     scene.add(model);
     updateTreeObject();
     render();
+    // focus on the model
+    moveCameraToObject(model);
   });
+}
+
+// Update the existing loadModel function to use the replaceModel function
+function loadModel() {
+  let url = get(modelUrl);
+  console.log("Loading model from", url);
+  replaceModel(url);
 }
 
 function initControls() {
@@ -356,8 +380,6 @@ export async function saveToDirOld() {
     console.error("Failed to write file", error);
   }
 }
-
-import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 
 export async function saveToDir() {
   // Specify options to export to GLB

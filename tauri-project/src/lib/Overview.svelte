@@ -22,22 +22,22 @@
 
   <body class="flex h-full w-full flex-col items-center justify-center gap-16 bg-gray-100 px-6 py-16 dark:bg-gray-950">
     <div class="container mx-auto grid max-w-6xl grid-cols-1 gap-16 md:grid-cols-3">
-      <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="http://localhost:5000">
+      <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="/upload-rag">
         <div class="flex h-24 w-24 items-center justify-center rounded-full bg-blue-500 text-white group-hover:bg-blue-600">
           <UploadIcon />
         </div>
         <div>
           <h3 class="text-2xl font-semibold tracking-tight">Upload Document</h3>
-          <p class="mt-2 text-gray-500 dark:text-gray-400 text-lg">Upload your documents for processing.</p>
+          <p class="mt-2 text-gray-500 dark:text-gray-400 text-lg">Augment your agent with information.</p>
         </div>
       </a>
-      <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="#">
+      <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="/upload-three-dim">
         <div class="flex h-24 w-24 items-center justify-center rounded-full bg-green-500 text-white group-hover:bg-green-600">
           <ThreeDimIcon />
         </div>
         <div>
-          <h3 class="text-2xl font-semibold tracking-tight">Upload Model</h3>
-          <p class="mt-2 text-gray-500 dark:text-gray-400 text-lg">Upload your models for processing.</p>
+          <h3 class="text-2xl font-semibold tracking-tight">Upload 3D Model</h3>
+          <p class="mt-2 text-gray-500 dark:text-gray-400 text-lg">Upload models for annotation and import.</p>
         </div>
       </a>
       <a class="group flex flex-col items-center justify-center gap-8 rounded-xl bg-white p-16 text-center shadow-sm transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800" href="/editor">
@@ -46,7 +46,7 @@
         </div>
         <div>
           <h3 class="text-2xl font-semibold tracking-tight">Annotate Model</h3>
-          <p class="mt-2 text-gray-500 dark:text-gray-400 text-lg">Annotate your models for processing.</p>
+          <p class="mt-2 text-gray-500 dark:text-gray-400 text-lg">Annotate models for better interactions.</p>
         </div>
       </a>
     </div>
