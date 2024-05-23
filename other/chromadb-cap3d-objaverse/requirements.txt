@@ -1,4 +1,0 @@
-objaverse
-chromadb
-Flask
-Flask-Cors

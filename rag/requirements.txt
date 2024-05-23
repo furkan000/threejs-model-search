@@ -1,4 +1,0 @@
-flask
-phidata
-sqlalchemy
-pgvectorflask_cors

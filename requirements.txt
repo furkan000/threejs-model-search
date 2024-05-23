@@ -1,6 +1,0 @@
-langchain
-openai
-flask
-flask-cors
-chromadb
-objaverse
