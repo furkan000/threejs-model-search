@@ -1,0 +1,1 @@
+- mit wsl in /renderer folgendes ausführen python renderer.py

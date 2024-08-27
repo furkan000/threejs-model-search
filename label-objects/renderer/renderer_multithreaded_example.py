@@ -187,5 +187,5 @@ def render_single_mesh(glb_path, output_dir, node_index, yfov, aspect_ratio):
     print("Finished rendering mesh", node_index)        
 
 # Usage
-# num_cores = 8  # for example, 8 processes
-# render_meshes_from_scene("./cafeteria.glb", "./render", num_processes=num_cores)
+num_cores = 8  # for example, 8 processes
+render_meshes_from_scene("./cafeteria.glb", "./render", num_processes=num_cores)

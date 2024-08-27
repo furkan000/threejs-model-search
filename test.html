@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>Test</title>
+  </head>
+
+  <script>
+    const fetchResult = async (text) => {
+      try {
+        const response = await fetch("http://localhost:5001/find", {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          body: text,
+        });
+
+        if (response.ok) {
+          const data = await response.text();
+          console.log("Response:", data);
+        } else {
+          console.error("Error:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Fetch Error:", error);
+      }
+    };
+
+    fetchResult("Your text here");
+  </script>
+</html>
