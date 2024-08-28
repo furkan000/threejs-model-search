@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # script1:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   # volumes:
+  #     # - ./script1:/app/script1
+  #   working_dir: /app/script1
+  #   command: python hello.py
+
+  script2:
+    build:
+      context: .
+    volumes:
+      - ./02-asset-search:/app/02-asset-search
+    working_dir: /app/02-asset-search
+    command: python main_local_embedding.py
+
+  # scriptN:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./scriptN:/app/scriptN
+  #   working_dir: /app/scriptN
+  #   command: python main.py

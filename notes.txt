@@ -1,3 +1,0 @@
-Lösungsansätze Segmentation
-- object segmentation geht häufig nur mit point clouds -> 3d model in Punktewolke -> Punktewolke wieder zu 3d modell
-- 3d -> foto -> 3d
