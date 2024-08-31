@@ -1,37 +1,69 @@
-import classifier.classifier as classifier
-import renderer.renderer as renderer
-from PIL import Image
 import os
-from transformers import pipeline
-from PIL import Image
+from transformers import BlipProcessor, BlipForConditionalGeneration
+import openai
 
+# Load BLIP model and processor
+processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
+model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
-captioner = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
+# Set OpenAI API key
+openai.api_key = "your_openai_api_key"
 
+def generate_caption(image_path):
+    image = Image.open(image_path)
+    inputs = processor(image, return_tensors="pt")
 
-# renderer.render_meshes_from_scene('./renderer/cafeteria.glb', './render')
+    out = model.generate(**inputs)
+    result = processor.decode(out[0], skip_special_tokens=True)
+    
+    # Filter out unwanted phrases
+    if result.startswith('a '):
+        result = result[2:]
+    if result.startswith('an '):
+        result = result[3:]
+    result = result.replace('on a white background', '')
+    result = result.replace('with a white background', '')
+    result = result.replace('a white background', '')
+    result = result.replace('white background', '')
+    result = result.strip()
 
-# --------------------------------------------------------------------
+    return result
 
-directory_path = 'render'
-all_entries = os.listdir(directory_path)
-files = [f for f in all_entries if os.path.isfile(os.path.join(directory_path, f))]
-files = sorted(files)
+def get_mesh_id(filename):
+    parts = filename.split('_')
+    return int(parts[2]), int(parts[3])
 
-# print(files)
+def generate_mesh_name(captions):
+    prompt = "Based on these captions from different perspectives, provide a single, short name for the 3D mesh:\n"
+    prompt += "\n".join(captions)
+    
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=10
+    )
+    return response.choices[0].text.strip()
 
-classify_image = classifier.load_image_classifier()
-for file in files:
-    image = Image.open(file)
-    result = captioner(image)
-    print(file, result)
+def main():
+    folder_path = 'path_to_your_folder'
+    mesh_captions = {}
 
+    for filename in os.listdir(folder_path):
+        if filename.startswith('rendered_mesh_'):
+            mesh_id, camera_id = get_mesh_id(filename)
+            image_path = os.path.join(folder_path, filename)
+            caption = generate_caption(image_path)
+            
+            if mesh_id not in mesh_captions:
+                mesh_captions[mesh_id] = []
+            mesh_captions[mesh_id].append(caption)
 
-# image_path = "./example.png"
-# top_prediction = classify_image(image_path)
-# print("Top prediction:", top_prediction)
+    mesh_names = {}
+    for mesh_id, captions in mesh_captions.items():
+        mesh_name = generate_mesh_name(captions)
+        mesh_names[mesh_id] = mesh_name
 
-# image = Image.open("./example.png")
-# top_prediction = classify_image(image)
+    print(mesh_names)
 
-# print("Top prediction:", top_prediction)
+if __name__ == "__main__":
+    main()
