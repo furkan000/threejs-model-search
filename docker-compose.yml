@@ -8,30 +8,33 @@ services:
     ports:
       - "5173:5173"
 
-  # 02-asset-search:
-  #   build:
-  #     context: .
-  #   volumes:
-  #     - ./02-asset-search:/app/02-asset-search
-  #   working_dir: /app/02-asset-search
-  #   command: python main.py
-  #   network_mode: host
+  02-asset-search:
+    build:
+      context: .
+    volumes:
+      - ./02-asset-search:/app/02-asset-search
+    working_dir: /app/02-asset-search
+    command: python main.py
+    ports:
+      - "5001:5001"
 
-  # 03-rag:
-  #   build:
-  #     context: .
-  #   volumes:
-  #     - ./03-rag:/app/03-rag
-  #   working_dir: /app/03-rag
-  #   command: python main.py
-  #   network_mode: host
+  03-rag:
+    build:
+      context: .
+    volumes:
+      - ./03-rag:/app/03-rag
+    working_dir: /app/03-rag
+    command: python main.py
+    ports:
+      - "5000:5000"
 
-  # 05-caption-api:
-  #   build:
-  #     context: .
-  #   volumes:
-  #     - ./05-caption-api:/app/05-caption-api
-  #   working_dir: /app/05-caption-api
-  #   command: python main.py
-  #   network_mode: host
+  05-caption-api:
+    build:
+      context: .
+    volumes:
+      - ./05-caption-api:/app/05-caption-api
+    working_dir: /app/05-caption-api
+    command: python main.py
+    ports:
+      - "5009:5009"
 

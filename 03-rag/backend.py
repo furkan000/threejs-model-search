@@ -1,9 +1,7 @@
-from dotenv import load_dotenv
 from phi.assistant import Assistant
 from phi.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from phi.vectordb.pgvector import PgVector2
 
-load_dotenv()
 
 def ask_question(prompt):
     # load pdfs

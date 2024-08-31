@@ -1,3 +1,7 @@
+phidata
+requests
+sqlalchemy
+pgvector
 langchain
 openai
 flask
@@ -6,3 +10,5 @@ chromadb
 objaverse
 ai2thor
 python-dotenv
+transformers
+torch
