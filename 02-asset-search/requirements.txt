@@ -1,5 +1,0 @@
-numpy
-objaverse
-chromadb
-Flask
-Flask-Cors

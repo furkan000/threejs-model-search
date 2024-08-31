@@ -5,3 +5,4 @@ flask-cors
 chromadb
 objaverse
 ai2thor
+python-dotenv

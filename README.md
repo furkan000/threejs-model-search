@@ -4,13 +4,15 @@
 
 This project consists of several component. Most notably the Unity project, the annoation tool and services that take an assisting role. As well as our automated labeling solution.
 
-![Example image](images/system_architecture.png)
+![Example image](.media/system_architecture.png)
 
 | Subdirectory | Description                 |
 |--------------|-----------------------------|
-| [annotation-tool](./Subdir1/README.md) | User interface to annotate models add documents, upload models |
-| Subdir2      | [README](./Subdir2/README.md) |
-| Subdir3      | [README](./Subdir3/README.md) |
+| 01-authoring tool | User interface to upload, search, annotate, load models into the scene and to upload documents for the LLM|
+| 02-asset-search   | 3D model search tool exposing an API (NOTE: rthis variant only uses 30,000 entries to save on space, might impact performance)|
+| 03-rag             | RAG service that has API endpoints for document upload and prompt processing using pgvector and phidate |
+| 04-object-labeling | Code for automated labeling using blip |
+| 05-caption-api | Image captioning API |
 
 
 ## How to run

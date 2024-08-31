@@ -1,28 +1,45 @@
 version: '3.8'
 
 services:
-  # script1:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   # volumes:
-  #     # - ./script1:/app/script1
-  #   working_dir: /app/script1
-  #   command: python hello.py
+  01-authoring-tool:
+    build: 
+      context: ./01-authoring-tool
+      dockerfile: Dockerfile
+    network_mode: host
 
-  script2:
+  02-asset-search:
     build:
       context: .
     volumes:
       - ./02-asset-search:/app/02-asset-search
     working_dir: /app/02-asset-search
     command: python main_local_embedding.py
+    network_mode: host
 
-  # scriptN:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./scriptN:/app/scriptN
-  #   working_dir: /app/scriptN
-  #   command: python main.py
+  03-rag:
+    build:
+      context: .
+    volumes:
+      - ./03-rag:/app/03-rag
+    working_dir: /app/03-rag
+    command: python main.py
+    network_mode: host
+
+  04-object-labeling:
+    build:
+      context: .
+    volumes:
+      - ./04-object-labeling:/app/04-object-labeling
+    working_dir: /app/04-object-labeling
+    command: python main.py
+    network_mode: host
+
+  05-caption-api:
+    build:
+      context: .
+    volumes:
+      - ./05-caption-api:/app/05-caption-api
+    working_dir: /app/05-caption-api
+    command: python main.py
+    network_mode: host
+

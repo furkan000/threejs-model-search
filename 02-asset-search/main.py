@@ -8,24 +8,27 @@ import urllib.parse
 import chromadb.utils.embedding_functions as embedding_functions
 import openai
 from openai import OpenAI
+import os
+
+# Set this variable to True to use OpenAI embeddings, or False to use a different method
+use_openai_embedding = False  # Set to False for example
+database_path = "./databases/thirty-thousand.db"
+
+# Load API key directly from environment variables if necessary
+if use_openai_embedding:
+    openai_api_key = os.environ.get('OPENAI_API_KEY')
+    if openai_api_key is None:
+        raise ValueError("OPENAI_API_KEY environment variable not set")
+
+    openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+        api_key=openai_api_key,
+        model_name="text-embedding-3-small"
+    )
+    client = OpenAI(api_key=openai_api_key)
 
 uids = objaverse.load_uids()
-chroma_client = chromadb.PersistentClient(path="./databases/thirty-thousand.db")
-# chroma_client = chromadb.PersistentClient(path="./full.db")
-# chroma_client = chromadb.PersistentClient(path="./openai_full.db")
+chroma_client = chromadb.PersistentClient(path=database_path)
 collection = chroma_client.get_collection(name="my_collection")
-
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Enable CORS for all routes
-
-openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-                api_key="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",
-                model_name="text-embedding-3-small"
-            )
-
-
-client = OpenAI(api_key="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")
-
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Enable CORS for all routes
@@ -38,31 +41,35 @@ def find():
     return response, 200
 
 def text_embedding(text) -> None:
-    # response = openai.Embedding.create(model="text-embedding-3-small", input=text)
-    return client.embeddings.create(input = [text], model="text-embedding-3-small").data[0].embedding
-    # print(len(response["data"][0]["embedding"]))
-    # return response["data"][0]["embedding"]
-    
+    if use_openai_embedding:
+        # Use OpenAI embedding if the flag is set
+        return client.embeddings.create(input=[text], model="text-embedding-3-small").data[0].embedding
+    else:
+        # Here you could implement an alternative embedding method
+        raise NotImplementedError("Alternative embedding method is not implemented")
 
 def handle_prompt(user_query):
+    if use_openai_embedding:
+        # Get embedding using OpenAI API
+        user_query_embedding = text_embedding(user_query)   
+        results = collection.query(query_texts=[user_query_embedding], n_results=1)
+    else:
+        # Assume user_query is already an embedding if not using OpenAI
+        results = collection.query(query_embeddings=user_query, n_results=1)
     
-    # user_query=text_embedding(user_query)
-    
-    # results = collection.query(query_texts=[user_query], n_results=1)
-    results = collection.query( query_embeddings=user_query, n_results=1)
     print("results: " + str(results))
     top_id = results["ids"][0]
     object_path = download_objects(top_id)
     formatted_path = format_path_to_uri(object_path)
     return formatted_path
 
-
 @app.route("/search", methods=["POST"])
 def search():
     text_data = request.data.decode("utf-8")
-    # return jsonify( "Hello, World!" )
-    # text_data=text_embedding(text_data)
-    
+
+    if use_openai_embedding: 
+        text_data = text_embedding(text_data)
+
     results = collection.query(query_texts=[text_data], n_results=6)
 
     ids = results["ids"][0]
@@ -77,8 +84,8 @@ def search():
         titles.append(title)
         description = annotation["description"]
         descriptions.append(description)
-        thumbails = annotation["thumbnails"]["images"]    
-        first_thumbnail = thumbails[0]
+        thumbnails = annotation["thumbnails"]["images"]    
+        first_thumbnail = thumbnails[0]
         first_thumbnail_url = first_thumbnail["url"]
         thumbnails_url.append(first_thumbnail_url)
 
@@ -101,10 +108,7 @@ def download(id):
     url = url.replace("\\", "/")
     return send_file(url, as_attachment=True)
     
-
-
 def download_objects(ids):
-    # print("ids: " + str(ids))
     objects = objaverse.load_objects(uids=ids)
     object_path = list(objects.values())[0]
     return object_path
@@ -114,13 +118,10 @@ def format_path_to_uri(path):
     uri_path = 'file:///' + path.replace("\\", "/")
     return uri_path
 
-# For testing purposes  
+# Uncomment for testing purposes
 # print(handle_prompt("green chair"))
 
-
 app.run(debug=True, port=5001)
-    
+
+# Example command to test the find route:
 # curl -X POST http://localhost:5001/find -d "Hello, Flask!" -H "Content-Type: text/plain"
-
-
-
