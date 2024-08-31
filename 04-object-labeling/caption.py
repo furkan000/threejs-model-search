@@ -1,4 +1,5 @@
 import os
+from PIL import Image  # Make sure you have this import for handling images
 from transformers import BlipProcessor, BlipForConditionalGeneration
 import openai
 
@@ -25,6 +26,7 @@ def generate_caption(image_path):
     result = result.replace('with a white background', '')
     result = result.replace('a white background', '')
     result = result.replace('white background', '')
+    result = result.replace('3D model of', '')
     result = result.strip()
 
     return result
@@ -33,14 +35,15 @@ def get_mesh_id(filename):
     parts = filename.split('_')
     return int(parts[2]), int(parts[3])
 
-def generate_mesh_name(captions):
-    prompt = "Based on these captions from different perspectives, provide a single, short name for the 3D mesh:\n"
+def combine_captions_with_gpt(captions):
+    prompt = "You are given a list of captions describing different perspectives of a 3D mesh. Combine these captions into a single, coherent description:\n"
     prompt += "\n".join(captions)
     
     response = openai.Completion.create(
-        engine="text-davinci-003",
+        engine="gpt-4",
         prompt=prompt,
-        max_tokens=10
+        max_tokens=50,  # Adjust token count as needed
+        temperature=0.7  # Adjust temperature to control creativity
     )
     return response.choices[0].text.strip()
 
@@ -60,7 +63,7 @@ def main():
 
     mesh_names = {}
     for mesh_id, captions in mesh_captions.items():
-        mesh_name = generate_mesh_name(captions)
+        mesh_name = combine_captions_with_gpt(captions)
         mesh_names[mesh_id] = mesh_name
 
     print(mesh_names)

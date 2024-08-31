@@ -6,6 +6,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import os
 
+path_to_model = "./models/cafeteria.glb"
+output_path = "./render"
 
 def create_raymond_lights(mesh_bbox_center, mesh_bbox_extents):
     thetas = np.pi * np.array([1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0, 1.0 / 6.0])
@@ -135,4 +137,4 @@ def render_meshes_from_scene(glb_path, output_dir, yfov=np.pi / 10.0, aspect_rat
             mesh_index += 1
 
 # Usage
-render_meshes_from_scene("./modern_interior_pack.glb", "./render_interior")
+render_meshes_from_scene(path_to_model, output_path)
