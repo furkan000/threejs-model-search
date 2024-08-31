@@ -7,8 +7,10 @@ import openai
 processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
-# Set OpenAI API key
-openai.api_key = "your_openai_api_key"
+# Get OpenAI API key from environment variable
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+if not openai.api_key:
+    raise ValueError("OpenAI API key is not set in the environment variable 'OPENAI_API_KEY'")
 
 def generate_caption(image_path):
     image = Image.open(image_path)
@@ -26,7 +28,6 @@ def generate_caption(image_path):
     result = result.replace('with a white background', '')
     result = result.replace('a white background', '')
     result = result.replace('white background', '')
-    result = result.replace('3D model of', '')
     result = result.strip()
 
     return result
@@ -36,14 +37,18 @@ def get_mesh_id(filename):
     return int(parts[2]), int(parts[3])
 
 def combine_captions_with_gpt(captions):
-    prompt = "You are given a list of captions describing different perspectives of a 3D mesh. Combine these captions into a single, coherent description:\n"
+    prompt = (
+        "You are given a list of captions describing different perspectives of a 3D mesh. "
+        "Combine these captions into a single, coherent description. Remove terms like '3D model of', 'on a white background', "
+        "and similar phrases. Instead, provide concise, descriptive labels for the object:\n"
+    )
     prompt += "\n".join(captions)
     
     response = openai.Completion.create(
-        engine="gpt-4",
+        engine="gpt-4o",
         prompt=prompt,
         max_tokens=50,  # Adjust token count as needed
-        temperature=0.7  # Adjust temperature to control creativity
+        # temperature=0.7  # Adjust temperature to control creativity
     )
     return response.choices[0].text.strip()
 
