@@ -11,4 +11,3 @@ objaverse
 ai2thor
 python-dotenv
 transformers
-torch

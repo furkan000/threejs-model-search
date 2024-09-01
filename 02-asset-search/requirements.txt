@@ -1,0 +1,6 @@
+objaverse
+chromadb
+flask
+flask-cors
+urllib3
+openai

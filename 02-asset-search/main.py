@@ -121,7 +121,7 @@ def format_path_to_uri(path):
 # Uncomment for testing purposes
 # print(handle_prompt("green chair"))
 
-app.run(debug=True, port=5001)
+app.run(host='0.0.0.0', debug=True, port=5001)
 
 # Example command to test the find route:
 # curl -X POST http://localhost:5001/find -d "Hello, Flask!" -H "Content-Type: text/plain"

@@ -1,0 +1,10 @@
+trimesh
+pyrender
+numpy
+matplotlib
+flask
+flask-cors
+pillow
+transformers
+torch
+openai

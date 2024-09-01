@@ -1,40 +1,49 @@
 version: '3.8'
 
 services:
-  01-authoring-tool:
-    build: 
+  authoring-tool:
+    build:
       context: ./01-authoring-tool
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
 
-  02-asset-search:
+  asset-search:
     build:
-      context: .
-    volumes:
-      - ./02-asset-search:/app/02-asset-search
-    working_dir: /app/02-asset-search
-    command: python main.py
+      context: ./02-asset-search
+      dockerfile: Dockerfile
     ports:
       - "5001:5001"
 
-  03-rag:
+  rag:
     build:
-      context: .
-    volumes:
-      - ./03-rag:/app/03-rag
-    working_dir: /app/03-rag
-    command: python main.py
+      context: ./03-rag
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
+    depends_on:
+      - pgvector
 
-  05-caption-api:
+  caption-api:
     build:
-      context: .
-    volumes:
-      - ./05-caption-api:/app/05-caption-api
-    working_dir: /app/05-caption-api
-    command: python main.py
+      context: ./05-caption-api
+      dockerfile: Dockerfile
     ports:
       - "5009:5009"
 
+  pgvector:
+      environment:
+          - POSTGRES_DB=ai
+          - POSTGRES_USER=ai
+          - POSTGRES_PASSWORD=ai
+          - PGDATA=/var/lib/postgresql/data/pgdata
+      volumes:
+          - pgvolume:/var/lib/postgresql/data
+      ports:
+          - 5532:5432
+      container_name: pgvector
+      image: phidata/pgvector:16
+volumes:
+  pgvolume:
+      external: true
+      name: pgvolume
